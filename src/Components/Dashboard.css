@@ -1,0 +1,651 @@
+.dashboard-container {
+  display: flex;
+  height: 100vh;
+  background-color: #f8f9fa;
+}
+
+.sidebar {
+  width: 250px;
+  background-color: #0c1b3a ;
+  background-color: #333 !important;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  z-index: 100;
+}
+
+.dashboard-container .logo {
+  display: flex;
+  align-items: center;
+  color: white;
+  font-size: 26px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  gap: 10px;
+  background-color: #6b6666 !important;
+
+  width: 70% !important;
+  margin-bottom: 30px;
+  background-color: #162c52 !important;
+  color: white;
+  border: none;
+  padding: 14px;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s, transform 0.2s;
+  text-align: left;
+  justify-content: flex-start;
+}
+.dashboard-container .logo.active{
+  background-color: #20467f !important;
+} 
+.dashboard-container .logo i {
+  font-size: 30px;
+}
+
+.dashboard-container .admin-icon {
+  font-size: 40px;
+  color: white ;
+  background-color: #333 !important;
+}
+
+.sidebar button {
+  width: 70% !important;
+  margin-bottom: 30px;
+  background-color: hsla(0, 4%, 56%, 0.699) !important ;
+  color: white;
+  border: none;
+  padding: 14px;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s, transform 0.2s;
+  text-align: left;
+  justify-content: flex-start;
+}
+
+.dashboard-container .sidebar button.active, .sidebar button:hover {
+  background-color: #20467f !important;
+  transform: scale(1.05);
+}
+
+.sidebar button i {
+  font-size: 20px;
+  display: inline-block;
+}
+
+.sidebar .logout {
+  margin-top: auto;
+  background-color: #d9534f !important ;
+  width: 90%;
+}
+
+.sidebar .logout:hover {
+  background-color: #c9302c !important;
+}
+
+/* إضافة تأثير لإظهار وإخفاء المحتوى */
+.content {
+  flex: 1;
+  padding: 20px;
+  display: none; /* يتم إخفاء المحتوى افتراضيًا */
+}
+
+.content.active {
+  display: block; /* يتم عرضه عند تفعيله */
+}
+
+/* التحكم في عرض الجدول عند الضغط */
+.dashboard-container .table-container {
+  display: none;
+  margin-top: 20px;
+  margin-left: 80px !important;
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.table-container.active {
+  margin-left: 400px !important;
+  display: block;
+  opacity: 1;
+}
+.table-container {
+  display: none;
+  margin-top: 20px;
+}
+
+.table-container.active {
+  display: block;
+}
+.dashboard-container  .report-writing {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  max-width: 600px;
+  margin-left: 300px;
+}
+
+.dashboard-container .report-writing textarea {
+  width: 100%;
+  height: 150px;
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  outline: none;
+  resize: none;
+  background-color: white;
+}
+
+.dashboard-container .report-writing textarea:focus {
+  border-color: #20467f;
+  box-shadow: 0 0 5px rgba(32, 70, 127, 0.5);
+}
+
+.dashboard-container .save-report-btn {
+  background-color: #20467f;
+  color: white;
+  border: none;
+  padding: 12px;
+  font-size: 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s, transform 0.2s;
+}
+
+.dashboard-container .save-report-btn:hover {
+  background-color: #162c52;
+  transform: scale(1.05);
+}
+.dashboard-container .report-btn {
+  width: 50%;
+  margin-top: 30px;
+  background: linear-gradient(135deg, #20467f, #162c52) ;
+  color: white;
+  border: none;
+  padding: 14px;
+  font-size: 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  margin-left:300px ;
+}
+
+.dashboard-container .report-btn:hover {
+  background: linear-gradient(135deg, #2859a9, #1a3971);
+  transform: scale(1.05);
+}
+
+.dashboard-container .report-btn:active {
+  transform: scale(0.98);
+}
+
+
+
+.logo {
+  font-size: 20px;
+  font-weight: bold;
+  color: white;
+  cursor: pointer;
+  padding: 15px;
+  text-align: center;
+  background: #333;
+  background-color: #162c52 !important;
+
+  border-radius: 5px;
+}
+
+.dashboard-container .logo.active {
+  background: #007bff ; /* اللون الأزرق عند التحديد */
+  color: white;
+}
+
+.dashboard-container .sidebar button.active {
+  background: #007bff ;
+  color: white;
+}
+/* اضفاة مورد للحجز */
+/* زر إضافة مورد */
+.add-resource-btn {
+  background-color: #162c52 !important;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  margin: 10px 0;
+  cursor: pointer;
+  font-size: 16px;
+  border-radius: 5px;
+}
+
+.dashboard-container .add-resource-btn:hover {
+  background-color: #162c52 !important;
+}
+
+/* تصميم النافذة المنبثقة */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  width: 300px;
+  text-align: center;
+}
+
+.modal h3 {
+  margin-bottom: 15px;
+}
+
+.modal input {
+  width: 100%;
+  padding: 8px;
+  margin: 8px 0;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: space-between;
+}
+
+.confirm-btn {
+  background-color: #2196F3;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.confirm-btn:hover {
+  background-color: #1e87e3;
+}
+
+.delete-btn {
+  background-color: #f44336;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.delete-btn:hover {
+  background-color: #d32f2f;
+}
+/* اضافات الحجز و الصيانة */
+.styled-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.confirm-btn {
+  background-color: #28a745;
+  color: white;
+}
+
+.delete-btn {
+  background-color: #dc3545;
+  color: white;
+}
+
+.repair-btn {
+  background-color: #007bff;
+  color: white;
+}
+
+.toggle-btn {
+  background-color: #ffc107;
+  color: black;
+}
+
+.fixed-status {
+  color: green;
+  font-weight: bold;
+}
+
+.out-order-status {
+  color: red;
+  font-weight: bold;
+}
+
+
+
+
+
+/* للهاتف  */
+/* الشريط الجانبي */
+.sidebar {
+  width: 250px;
+  background: #333;
+  color: white;
+  height: 100vh;
+  position: fixed;
+  left: 0;
+  top: 0;
+  transition: transform 0.3s ease-in-out;
+}
+
+/* عند إغلاق الشريط الجانبي */
+.sidebar.hidden {
+  transform: translateX(-100%);
+}
+
+/* زر القائمة */
+.menu-toggle {
+  display: none;
+  background: #333;
+  color: white;
+  font-size: 24px;
+  padding: 10px;
+  border: none;
+  cursor: pointer;
+}
+
+/* المحتوى الرئيسي */
+.main-content {
+ /* margin-left: 250px; /* تعويض عرض الشريط الجانبي */
+  padding: 20px;
+  transition: margin-left 0.3s ease-in-out;
+}
+
+/* عندما يكون الشريط مغلقًا، المحتوى يتمدد */
+.main-content.full-width {
+  margin-left: 0;
+}
+
+/* 🌍 التصميم المتجاوب */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 100%;
+    height: auto;
+    position: fixed;
+    top: 0;
+    left: 0;
+    transform: translateX(-100%);
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  .menu-toggle {
+    display: block;
+  }
+
+  .main-content {
+    margin-left: 0;
+  }
+}
+
+.chart-box {
+  width: 100%;
+  height: 300px; /* قلل الارتفاع هنا */
+  max-width: 600px; /* تحديد أقصى عرض للمخطط */
+  margin: auto;
+}
+
+
+/* إخفاء القائمة الجانبية في الشاشات الصغيرة */
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    left: -250px;
+    width: 250px;
+    height: 100%;
+    background: #333;
+    transition: left 0.3s ease-in-out;
+  }
+
+  .sidebar.open {
+    left: 0;
+  }
+
+  .menu-toggle {
+    display: block;
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    background: none;
+    border: none;
+    color: white;
+  }
+
+  .main-content {
+    margin-left: 0;
+  }
+
+  /* جعل الجداول قابلة للتمرير أفقيًا */
+  .responsive-table {
+    overflow-x: auto;
+  }
+
+  .styled-table {
+    width: 100%;
+    min-width: 600px;
+  }
+}
+
+.dashboard-container th {
+  background-color: #1e87e3 !important; /* لون أخضر داكن لرأس الجدول */
+  color: white; /* تغيير لون النص إلى الأبيض ليكون واضحًا */
+  padding: 10px;
+  text-align: left;
+ 
+}
+
+
+
+.add-resource-btn {
+  margin: 10px 0;
+  padding: 8px 12px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex; justify-content: center; align-items: center;
+  z-index: 999;
+}
+
+.modal {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  width: 300px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.3);
+}
+
+.modal input, .modal select {
+  width: 100%;
+  padding: 8px;
+  margin-top: 10px;
+}
+
+.modal-buttons {
+  margin-top: 15px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.confirm-btn {
+  background-color: #2196F3;
+  color: white;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.delete-btn {
+  background-color: #f44336;
+  color: white;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+
+
+
+/* هذه ال users*/
+/* تنسيق عام للصفحة */
+.table-container {
+  padding: 20px;
+  background-color: #f4f6f9;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* العنوان */
+.responsive-table h2 {
+  margin-bottom: 20px;
+  color: #2c3e50;
+}
+
+/* جدول المستخدمين */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #ffffff;
+}
+
+th, td {
+  text-align: left;
+  padding: 12px;
+  border-bottom: 1px solid #ddd;
+}
+
+th {
+  background-color: #3498db;
+  color: white;
+}
+
+/* زر الإضافة */
+.add-resource-btn {
+  background-color: #27ae60;
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-bottom: 16px;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+}
+
+.add-resource-btn:hover {
+  background-color: #219150;
+}
+
+/* أزرار الحذف */
+.delete-btn {
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-right: 6px;
+  font-size: 14px;
+}
+
+.delete-btn:hover {
+  background-color: #c0392b;
+}
+
+/* نافذة الإضافة */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.modal {
+  background-color: white;
+  padding: 30px;
+  border-radius: 8px;
+  width: 400px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.modal input,
+.modal select {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+/* أزرار التأكيد والإلغاء */
+.confirm-btn {
+  background-color: #2980b9;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-right: 10px;
+  font-weight: bold;
+}
+
+.confirm-btn:hover {
+  background-color: #2471a3;
+}
+
+
+
+.search-input {
+  padding: 10px;
+  width: 60%;
+  margin-left: 100Px;
+  margin-bottom: 16px;
+  font-size: 16px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  display: block;
+}
