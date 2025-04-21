@@ -58,7 +58,7 @@
   }
   
   .login-button {
-    background: #2c3e50;
+    background: #2c3e50 !important;
     color: white;
     padding: 12px;
     border: none;
@@ -85,7 +85,7 @@
   .login-right {
     flex: 1;
     background-image: url('../Assets/dave-michael-iedYX4wsxwI-unsplash.jpg');
-  background-size: contain; /* أو استخدم cover/ 50% */
+  background-size: 100% 100%; /* أو استخدم cover/ 50% */
   background-position: center;
   background-repeat: no-repeat;
   

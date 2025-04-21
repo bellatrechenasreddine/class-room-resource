@@ -23,6 +23,10 @@ export default function Login() {
     } else {
       setError("Invalid email or password");
     }
+    if (email === "maintenance@example.com" && password === "maint123") {
+      navigate("/maintenance-dashboard");
+    }
+    
   };
 
   return (
@@ -68,9 +72,9 @@ export default function Login() {
       </div>
       <div className="login-right">
         <div className="overlay">
-          <p className="promo-text">
+          {/* <p className="promo-text">
             Manage all <span className="highlight">HR Operations</span> from the comfort of your home.
-          </p>
+          </p> */}
           <div className="carousel-indicators">
             <span className="active"></span>
             <span></span>

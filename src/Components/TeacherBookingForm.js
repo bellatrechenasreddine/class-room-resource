@@ -250,7 +250,7 @@ const TeacherBookingForm = () => {
           </select>
         </div>
       
-        <div className="form-group date-time">
+        {/* <div className="form-group date-time">
           <div>
             <label>Booking Date</label>
             <input type="date" required />
@@ -259,17 +259,30 @@ const TeacherBookingForm = () => {
             <label>Booking Time</label>
             <input type="time" required />
           </div>
-        </div>
-      
-        <div className="form-group">
-          <label>Duration (hours)</label>
-          <input type="number" min="1" placeholder="Enter duration" required />
-        </div>
-      
-        <div className="form-group">
-          <label>Reason for Booking</label>
-          <textarea rows="3" placeholder="Enter reason..." required></textarea>
-        </div>
+        </div> */}
+        <div className="booking-form">
+  {/* Booking Date - في الأعلى وتتوسطهم */}
+  <div style={{ textAlign: "center", marginBottom: "15px" }}>
+    <label style={{ display: "block", fontWeight: "bold", marginBottom: "5px" }}>
+      Booking Date
+    </label>
+    <input type="date" required style={{ padding: "8px", borderRadius: "6px", border: "1px solid #ccc" }} />
+  </div>
+
+  {/* Start and End Time */}
+  <div style={{ display: "flex", gap: "20px", justifyContent: "center" }}>
+    <div>
+      <label>Start Time</label>
+      <input type="time" required />
+    </div>
+    <div>
+      <label>End Time</label>
+      <input type="time" required />
+    </div>
+  </div>
+</div>
+
+    
       
         <div className="form-buttons">
           <button type="submit" className="submit-btn">📩 Submit</button>
