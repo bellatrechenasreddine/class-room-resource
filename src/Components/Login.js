@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import jwtDecode from "jwt-decode";
 import "./Login.css";
 
 export default function Login() {
@@ -8,25 +10,39 @@ export default function Login() {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!email || !password) {
       setError("Please enter email and password");
       return;
     }
 
-    if (email === "admin@example.com" && password === "admin123") {
-      navigate("/admin-dashboard");
-    } else if (email === "teacher@example.com" && password === "teacher123") {
-      navigate("/teacher-dashboard");
-    } else if (email === "student@example.com" && password === "student123") {
-      navigate("/student-dashboard");
-    } else {
-      setError("Invalid email or password");
+    try {
+      const res = await axios.post("http://localhost:5000/api/auth/login", {
+        email,
+        password
+      });
+
+      const token = res.data.token;
+      localStorage.setItem("token", token);
+
+      const decoded = jwtDecode(token); // فك التوكن للحصول على الدور
+      const role = decoded.role;
+
+      // توجيه حسب الدور
+      if (role === "admin") {
+        navigate("/admin-dashboard");
+      } else if (role === "teacher") {
+        navigate("/teacher-dashboard");
+      } else if (role === "student") {
+        navigate("/student-dashboard");
+      } else if (role === "maintenance") {
+        navigate("/maintenance-dashboard");
+      } else {
+        setError("Unknown role");
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || "Login failed");
     }
-    if (email === "maintenance@example.com" && password === "maint123") {
-      navigate("/maintenance-dashboard");
-    }
-    
   };
 
   return (
@@ -57,24 +73,15 @@ export default function Login() {
           <label>
             <input type="checkbox" /> Remember me
           </label>
-          <a onClick={() => navigate("/reset-password")} className="reset-password">
-             <span 
-    className="reset-password" 
-    onClick={() => navigate("/reset-password")}
-  >
-    Reset Password?
-  </span>
-  </a>
-
+          <span className="reset-password" onClick={() => navigate("/reset-password")}>
+            Reset Password?
+          </span>
         </div>
         <button onClick={handleLogin} className="login-button">Login</button>
         <p className="signup-text">Don't have an account yet? <a href="#">Join KRIS today.</a></p>
       </div>
       <div className="login-right">
         <div className="overlay">
-          {/* <p className="promo-text">
-            Manage all <span className="highlight">HR Operations</span> from the comfort of your home.
-          </p> */}
           <div className="carousel-indicators">
             <span className="active"></span>
             <span></span>

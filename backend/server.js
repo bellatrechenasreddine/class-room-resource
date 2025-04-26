@@ -1,71 +1,72 @@
-require("dotenv").config();  // تحميل متغيرات البيئة من ملف .env
-const express = require('express');  // استيراد مكتبة Express
-const jwt = require('jsonwebtoken');  // استيراد JWT
-const bcrypt = require('bcryptjs');  // استيراد مكتبة bcrypt لمقارنة كلمات السر
-const pool = require('./db');  // استيراد قاعدة البيانات (عادة ما يكون pool من pg)
-const cors = require('cors');  // استيراد CORS
-const verifyToken = require('./middleware/verifyToken');  // استيراد Middleware للتحقق من التوكن
+// تحميل المتغيرات البيئية من ملف .env
+require('dotenv').config();
+
+// استيراد المكتبات المطلوبة
+const express = require('express');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
+const pool = require('./db');
+const cors = require('cors');
 
 const app = express();
-const corsOptions = {
-    origin: 'http://localhost:3003', // عنوان الواجهة
-    credentials: true,
-  };
-  
-// تفعيل CORS لجميع المصادر
-app.use(cors());  // تأكد من أن CORS يتم تفعيله قبل المسارات الأخرى
 
-app.use(express.json());  // لتحويل بيانات الـ JSON المرسلة في الطلبات
+// إعدادات CORS
+const corsOptions = {
+  origin: 'http://localhost:3000',
+  credentials: true,
+};
+app.use(cors(corsOptions));
+
+// تمكين استقبال JSON
+app.use(express.json());
 
 // مسار تسجيل الدخول
 app.post('/api/auth/login', async (req, res) => {
   const { email, password } = req.body;
-  console.log("📧 Email received:", `"${email}"`);
-  console.log("📧 Email received:", email);
-  console.log("🔐 Password received:", password);
-
 
   if (!email || !password) {
     return res.status(400).json({ message: 'Email and password are required' });
   }
 
   try {
-    // البحث عن المستخدم في قاعدة البيانات باستخدام البريد الإلكتروني
-    const userResult = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
-    
-    if (userResult.rows.length === 0) {
+    // البحث عن المستخدم
+    const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+
+    if (result.rows.length === 0) {
+      console.log("❌ المستخدم غير موجود");
       return res.status(400).json({ message: 'Invalid email or password' });
     }
 
-    const user = userResult.rows[0];
+    const user = result.rows[0];
 
-    // التحقق من كلمة المرور باستخدام bcrypt
+    console.log("📧 البريد:", email);
+    console.log("🔐 كلمة المرور المدخلة:", password);
+    console.log("🔐 كلمة المرور في قاعدة البيانات:", user.password);
+
     const isMatch = await bcrypt.compare(password, user.password);
-    console.log("🔐 Password from user input:", password);
-    console.log("🔐 Password from database:", user.password);
-    console.log("🔍 Match result:", isMatch);
 
     if (!isMatch) {
+      console.log("❌ كلمة المرور غير صحيحة");
       return res.status(400).json({ message: 'Invalid email or password' });
     }
 
-    // توليد JWT
+    // توليد التوكن
     const token = jwt.sign(
-      { id: user.id, email: user.email, role: user.role },  // يمكن إضافة معلومات أخرى في الـ payload
-      process.env.JWT_SECRET,  // سر التوكن من ملف .env
-      { expiresIn: '1h' }  // تحديد مدة صلاحية التوكن (ساعة واحدة في هذا المثال)
+      { id: user.id, email: user.email, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' }
     );
 
-    // إرسال التوكن للمستخدم
+    console.log("✅ تسجيل دخول ناجح");
     res.json({ token });
 
   } catch (err) {
-    console.error(err);
+    console.error("💥 خطأ في السيرفر:", err);
     res.status(500).json({ message: 'Server error' });
   }
 });
 
-// تحديد المنفذ الذي سيعمل عليه السيرفر
+// تشغيل السيرفر
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`✅ Server is running on http://localhost:${PORT}`);
