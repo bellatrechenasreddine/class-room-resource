@@ -73,6 +73,10 @@ const [notifications, setNotifications] = useState([
 ]);
 const [isOpen, setIsOpen] = useState(false); // ✅ حالة التحكم في فتح/إغلاق الإشعارات
 
+
+// report and notification
+const [maintenanceNotifications, setMaintenanceNotifications] = useState([]);
+
   return (
     <div className="teacher-dashboard">
        {/* ✅ أيقونة الجرس لفتح صندوق الإشعارات */}
@@ -161,7 +165,12 @@ const [isOpen, setIsOpen] = useState(false); // ✅ حالة التحكم في �
 {activeTab === "booking" && <TeacherBookingForm />}
 
 {activeTab === "history" && <BookingForm />}
-{activeTab === "report" && <ReportForm />}
+{/* {activeTab === "report" && <ReportForm />} */}
+{activeTab === "report" && (
+  <ReportForm setMaintenanceNotifications={setMaintenanceNotifications} />
+)}
+
+
       </main>
     </div>
   );
