@@ -37,6 +37,8 @@ export default function Login() {
         navigate("/teacher-dashboard");
       } else if (userRole === "student") {
         navigate("/student-dashboard");
+      } else if (userRole === "maintenance") {
+        navigate("/maintenance-dashboard");  // إضافة مسار خاص بالـ Maintenance
       } else {
         setError("Unknown role");
       }

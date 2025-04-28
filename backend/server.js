@@ -1,24 +1,30 @@
 // تحميل المتغيرات البيئية من ملف .env
 require('dotenv').config();
-
 // استيراد المكتبات المطلوبة
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-const pool = require('./db');
 const cors = require('cors');
-
+const pool = require('./db');
 const app = express();
 
 // إعدادات CORS
 const corsOptions = {
-  origin: 'http://localhost:3000',
+  origin: ['http://localhost:3000', 'http://localhost:3001'],
   credentials: true,
 };
 app.use(cors(corsOptions));
+const userRoutes = require('./routes/userRoutes');// استيراد API المستخدمين
+const resourcesRouter = require('./routes/resources');  // استيراد API الموارد
 
+const reservationRoutes = require('./routes/reservationRoutes');
 // تمكين استقبال JSON
 app.use(express.json());
+
+app.use('/api/users', userRoutes);
+app.use('/api/resources', resourcesRouter);
+app.use('/api/reservations', reservationRoutes);
+
 
 // مسار تسجيل الدخول
 app.post('/api/auth/login', async (req, res) => {
@@ -71,3 +77,4 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`✅ Server is running on http://localhost:${PORT}`);
 });
+

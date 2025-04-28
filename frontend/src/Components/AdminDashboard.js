@@ -1,8 +1,10 @@
 
 // logout 
-import { useNavigate } from "react-router-dom";
+import TeacherBookingForm from "./TeacherBookingForm"
 
-import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { FaUsers } from "react-icons/fa";
+import React, { useState ,useEffect } from "react";
 import "./Dashboard.css";
 import { FaChartBar, FaClipboardList, FaCogs, FaSignOutAlt, FaDatabase, FaUserShield,FaBars } from "react-icons/fa";
 //  داىره import { Bar, Pie } from "react-chartjs-2";
@@ -10,10 +12,102 @@ import { Bar } from "react-chartjs-2"
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, ArcElement, Tooltip, Legend } from "chart.js";
 import NotificationBox from "../Components/NotificationBox"; // استيراد مكون الإشعارات
 import { FaBell } from "react-icons/fa"; // ✅ أيقونة الجرس
-
+import Loader from "../Components/Loader"; // استيراد اللودر
+import resourceOptions from "./resourceOptions"; // استيراد الموارد
+import axios from 'axios';
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, ArcElement, Tooltip, Legend);
 
+
+
+
 const AdminDashboard = () => {
+// usesrs
+const [users, setUsers] = useState([]);
+const [newUser, setNewUser] = useState({ name: "", email: "", role: "" });
+const [showAddUser, setShowAddUser] = useState(false);
+const [showEditUser, setShowEditUser] = useState(false);  // نافذة التعديل
+const [currentUser, setCurrentUser] = useState(null); // لتخزين المستخدم الحالي الذي سيتم تعديله
+const [searchQuery, setSearchQuery] = useState('');
+
+// جلب جميع المستخدمين من الباك اند
+useEffect(() => {
+  const fetchUsers = async () => {
+    try {
+      const response = await axios.get('http://localhost:5000/api/users');
+      setUsers(response.data);
+    } catch (error) {
+      console.error("Failed to fetch users", error);
+    }
+  };
+  fetchUsers();
+}, []);
+
+// تصفية المستخدمين بناءً على حقل البحث
+const filteredUsers = users.filter(user =>
+  user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  user.email.toLowerCase().includes(searchQuery.toLowerCase())
+);
+
+// إضافة مستخدم جديد
+const handleAddUser = async () => {
+  if (newUser.name && newUser.email && newUser.role) {
+    try {
+      const response = await axios.post('http://localhost:5000/api/users', newUser);
+      const addedUser = response.data;
+
+      setUsers([...users, addedUser]); // إضافة المستخدم الجديد إلى القائمة
+      setNewUser({ name: "", email: "", role: "" });
+      setShowAddUser(false);
+    } catch (error) {
+      console.error("Error adding user", error);
+      alert("حدث خطأ أثناء إضافة المستخدم");
+    }
+  }
+};
+
+// حذف مستخدم
+const handleDeleteUser = async (id) => {
+  const confirmDelete = window.confirm("هل أنت متأكد أنك تريد حذف هذا المستخدم؟");
+
+  if (confirmDelete) {
+    try {
+      await axios.delete(`http://localhost:5000/api/users/${id}`);
+      setUsers(users.filter(user => user.id !== id)); // تحديث القائمة بعد الحذف
+      alert("تم حذف المستخدم بنجاح");
+    } catch (error) {
+      console.error("Error deleting user", error);
+      alert("حدث خطأ أثناء حذف المستخدم");
+    }
+  }
+};
+
+// تعديل مستخدم
+const handleEditUser = (user) => {
+  setCurrentUser(user);  // تخزين بيانات المستخدم الحالي
+  setShowEditUser(true); // إظهار نافذة التعديل
+};
+
+// تأكيد التعديل
+const handleUpdateUser = async () => {
+  if (currentUser.name && currentUser.email && currentUser.role) {
+    try {
+      const response = await axios.put(`http://localhost:5000/api/users/${currentUser.id}`, currentUser);
+      const updatedUser = response.data;
+
+      // تحديث المستخدم في القائمة
+      setUsers(users.map(user => user.id === updatedUser.id ? updatedUser : user));
+      setShowEditUser(false);
+      alert("تم تعديل المستخدم بنجاح");
+    } catch (error) {
+      console.error("Error updating user", error);
+      alert("حدث خطأ أثناء تعديل المستخدم");
+    }
+  }
+};
+  
+
+  // report 
+
   const [activeTab, setActiveTab] = useState("dashboard");
   const [reportType, setReportType] = useState("");
   // iphone 
@@ -21,6 +115,11 @@ const AdminDashboard = () => {
   const handleTabClick = (tab) => {
     setActiveTab(tab);
     setSidebarOpen(false); // إغلاق الشريط الجانبي بعد الضغط
+    setLoading(true); // ⏳ تشغيل اللودر
+    setTimeout(() => {
+      setActiveTab(tab);
+      setLoading(false); // ⏳ إيقاف اللودر بعد تحميل المحتوى
+    }, 1500); // ⏳ محاكاة تحميل البيانات
   };
 // logout 
 const navigate = useNavigate();
@@ -52,75 +151,201 @@ const navigate = useNavigate();
     },
   };
   
-
+ 
   // resource 
+  const [resources, setResources] = useState([]);
+  const [newResource, setNewResource] = useState({
+    name: "",
+    type: "",       // تغيير category إلى type
+    status: "",     // إضافة status
+    location: "",   // إضافة location
+  });
   const [showAddResource, setShowAddResource] = useState(false);
-const [newResource, setNewResource] = useState({ name: "", category: "" });
-const [resources, setResources] = useState([
-  { name: "Projector", category: "Electronics" },
-  { name: "Whiteboard", category: "Office" },
-]);
+  const [showEditResource, setShowEditResource] = useState(false);  
+  const [currentResource, setCurrentResource] = useState(null);
+  const [searchResourceQuery, setSearchResourceQuery] = useState('');
+  
 
-const handleAddResource = () => {
-  if (newResource.name.trim() && newResource.category.trim()) {
-    setResources([...resources, newResource]); // إضافة المورد الجديد
-    setNewResource({ name: "", category: "" }); // تصفير الحقول
-    setShowAddResource(false); // إغلاق النموذج
-  } else {
-    alert("يرجى ملء جميع الحقول!");
+  
+  // جلب جميع الموارد من الباك اند
+  useEffect(() => {
+    const fetchResources = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/api/resources');
+        setResources(response.data);
+      } catch (error) {
+        console.error("Failed to fetch resources", error);
+      }
+    };
+    fetchResources();
+  }, []);
+  
+  // تصفية الموارد بناءً على حقل البحث
+  const filteredResources = resources.filter(resource =>
+    resource.name.toLowerCase().includes(searchResourceQuery.toLowerCase()) ||
+    resource.type.toLowerCase().includes(searchResourceQuery.toLowerCase()) ||   // تغيير category إلى type
+    resource.status.toLowerCase().includes(searchResourceQuery.toLowerCase()) || // إضافة status
+    resource.location.toLowerCase().includes(searchResourceQuery.toLowerCase()) // إضافة location
+  );
+  
+  // إضافة مورد جديد
+  const handleAddResource = async () => {
+    if (newResource.name && newResource.type && newResource.status && newResource.location) {  // تحقق من جميع الحقول
+      try {
+        const response = await axios.post('http://localhost:5000/api/resources', newResource);
+        const addedResource = response.data;
+  
+        setResources([...resources, addedResource]);
+        setNewResource({ name: "", type: "", status: "", location: "" });  // إعادة تعيين الحقول
+        setShowAddResource(false);
+      } catch (error) {
+        console.error("Error adding resource", error);
+        alert("حدث خطأ أثناء إضافة المورد");
+      }
+    } else {
+      alert("يرجى ملء جميع الحقول!");
+    }
+  };
+  
+  // تعديل مورد
+  const handleEditResource = (resource) => {
+    setCurrentResource(resource);
+    setShowEditResource(true);  // إظهار نافذة التعديل
+  };
+  
+  // تأكيد التعديل
+  const handleUpdateResource = async () => {
+    if (currentResource.name && currentResource.type && currentResource.status && currentResource.location) {  // تحقق من جميع الحقول
+      try {
+        const response = await axios.put(`http://localhost:5000/api/resources/${currentResource.id}`, currentResource);
+        const updatedResource = response.data;
+  
+        // تحديث المورد في القائمة
+        setResources(resources.map(resource => resource.id === updatedResource.id ? updatedResource : resource));
+        setShowEditResource(false);
+        alert("تم تعديل المورد بنجاح");
+      } catch (error) {
+        console.error("Error updating resource", error);
+        alert("حدث خطأ أثناء تعديل المورد");
+      }
+    }
+  };
+  const handleDeleteResource = async (id) => {
+    const confirmDelete = window.confirm("هل أنت متأكد أنك تريد حذف هذا المورد؟");
+  
+    if (confirmDelete) {
+      try {
+        await axios.delete(`http://localhost:5000/api/resources/${id}`);
+        setResources(resources.filter(resource => resource.id !== id)); // تحديث القائمة بعد الحذف
+        alert("تم حذف المورد بنجاح");
+      } catch (error) {
+        console.error("Error deleting resource", error);
+        alert("حدث خطأ أثناء حذف المورد");
+      }
+    }
+  };
+  
+  
+
+// reservation maintananvce 
+// 1. الحالة
+const [reservations, setReservations] = useState([]);
+const [newReservation, setNewReservation] = useState({ resource_id: '', user_id: '', start_time: '', end_time: '' });
+const [showAddRes, setShowAddRes] = useState(false);
+const [searchResQuery, setSearchResQuery] = useState('');
+
+// 2. جلب الحجوزات
+useEffect(() => {
+  axios.get('http://localhost:5000/api/reservations')
+    .then(res => setReservations(res.data))
+    .catch(err => console.error('Failed to fetch reservations', err));
+}, []);
+
+// 3. إضافة حجز جديد
+const handleAddReservation = async () => {
+  try {
+    const res = await axios.post('http://localhost:5000/api/reservations', newReservation);
+    setReservations([...reservations, res.data]);
+    setShowAddRes(false);
+    setNewReservation({ resource_id: '', user_id: '', start_time: '', end_time: '' });
+  } catch (err) {
+    console.error('Error adding reservation', err);
+    alert('حدث خطأ أثناء إضافة الحجز');
   }
 };
-// reservation maintananvce 
-// بيانات الحجوزات
-const [reservations, setReservations] = useState([
-  { id: 101, resource: "Projector", user: "John Doe", date: "2025-04-01" },
-  { id: 102, resource: "Whiteboard", user: "Jane Smith", date: "2025-04-02" }
-]);
 
-// بيانات طلبات الصيانة
-const [maintenanceRequests, setMaintenanceRequests] = useState([
-  { id: 201, resource: "Projector", status: "Fixed" },
-  { id: 202, resource: "Printer", status: "Out of Order" }
-]);
-
-// تأكيد الحجز
-const confirmReservation = (id) => {
-  console.log(`✅ تم تأكيد الحجز رقم ${id}`);
+// 4. حذف حجز
+const handleDeleteReservation = async (id) => {
+  if (!window.confirm('هل تريد إلغاء هذا الحجز؟')) return;
+  try {
+    await axios.delete(`http://localhost:5000/api/reservations/${id}`);
+    setReservations(reservations.filter(r => r.id !== id));
+  } catch (err) {
+    console.error('Error deleting reservation', err);
+    alert('حدث خطأ أثناء إلغاء الحجز');
+  }
 };
 
-// حذف الحجز
-const deleteReservation = (id) => {
-  setReservations(reservations.filter(reservation => reservation.id !== id));
-};
 
 // طلب إصلاح
 const requestRepair = (id) => {
-  console.log(`🔧 تم طلب إصلاح للمورد رقم ${id}`);
+  setLoading(true);
+  setTimeout(() => {
+    console.log(`🔧 تم طلب إصلاح للمورد رقم ${id}`);
+    setLoading(false);
+  }, 1500);
 };
+
+// const requestRepair = (id) => {
+//   console.log(`🔧 تم طلب إصلاح للمورد رقم ${id}`);
+// };
 
 // تغيير حالة الصيانة
 const toggleMaintenanceStatus = (id) => {
-  setMaintenanceRequests(prevRequests =>
-    prevRequests.map(req =>
-      req.id === id ? { ...req, status: req.status === "Fixed" ? "Out of Order" : "Fixed" } : req
-    )
-  );
+  setLoading(true);
+  setTimeout(() => {
+    setMaintenanceRequests(prevRequests =>
+      prevRequests.map(req =>
+        req.id === id ? {
+          ...req,
+          status: req.status === "Fixed" ? "Out of Order" : "Fixed"
+        } : req
+      )
+    );
+    setLoading(false);
+  }, 1500);
 };
+
+// const toggleMaintenanceStatus = (id) => {
+//   setMaintenanceRequests(prevRequests =>
+//     prevRequests.map(req =>
+//       req.id === id ? { ...req, status: req.status === "Fixed" ? "Out of Order" : "Fixed" } : req
+//     )
+//   );
+// };
 
 // حذف طلب الصيانة
 const deleteMaintenanceRequest = (id) => {
-  setMaintenanceRequests(maintenanceRequests.filter(req => req.id !== id));
+  setLoading(true);
+  setTimeout(() => {
+    setMaintenanceRequests(maintenanceRequests.filter(req => req.id !== id));
+    setLoading(false);
+  }, 1500);
 };
+
+// const deleteMaintenanceRequest = (id) => {
+//   setMaintenanceRequests(maintenanceRequests.filter(req => req.id !== id));
+// };
 // Notification 
 const [maintenanceNotifications, setMaintenanceNotifications] = useState([
-  "⚙️ تنبيه: جهاز معطل في المختبر 3",
-  "🚨 جهاز في المكتبة يحتاج إلى إصلاح عاجل"
+  "⚙️Alert: Faulty device in lab 3",
+  "🚨 A device in the library needs urgent repair"
 ]);
 
 const [notifications, setNotifications] = useState([
-  "🔔 طلب حجز جديد في الانتظار!",
-  "🔔 تمت الموافقة على حجز جديد.",
-  "🔔 مشكلة جديدة تم الإبلاغ عنها!"
+"🔔 A new reservation request is pending!",
+"🔔 A new reservation has been approved.",
+"🔔 A new issue has been reported!"
 ]);
 const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [isMaintenanceOpen, setIsMaintenanceOpen] = useState(false); // التحكم في إشعارات الصيانة
@@ -134,8 +359,47 @@ const [isAdminOpen, setIsAdminOpen] = useState(false);
     setIsAdminOpen(false); // إغلاق إشعارات المسؤول عند فتح إشعارات الصيانة
   };
 
+
+  const [loading, setLoading] = useState(true); // ⏳ حالة التحميل
+
+  useEffect(() => {
+    // محاكاة تحميل البيانات من API مع تأخير
+    setTimeout(() => {
+      setReservations([
+        { id: 101, resource: "Projector", user: "John Doe", date: "2025-04-01" },
+        { id: 102, resource: "Whiteboard", user: "Jane Smith", date: "2025-04-02" }
+      ]);
+      setLoading(false); // ⏳ إيقاف التحميل
+    }, 2000); // ⏳ محاكاة تأخير 2 ثانية
+  }, []);
+  
+  // نتاع الحدف والتحديث للمورد
+  const [editIndex, setEditIndex] = useState(null);
+const [editResource, setEditResource] = useState({ name: "", category: "" });
+
+const handleEdit = (index) => {
+  setEditIndex(index);
+  setEditResource({ ...resources[index] });
+};
+
+const handleDelete = (index) => {
+  const filtered = resources.filter((_, i) => i !== index);
+  setResources(filtered);
+};
+
+  // save report 
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedResource, setSelectedResource] = useState("");
+  const [issueDescription, setIssueDescription] = useState("");
+  const [usageReports, setUsageReports] = useState([]);
+  
+
   return (
     <div className="dashboard-container">
+       {loading ? (
+        <Loader /> // ✅ عرض اللودر أثناء التحميل
+      ) : (
+        <>
             {/* ✅ أيقونة الجرس للإشعارات */}
             <div className="notification-icon" onClick={toggleAdminNotifications}>
         <FaBell size={24} />
@@ -155,6 +419,10 @@ const [isAdminOpen, setIsAdminOpen] = useState(false);
         <h2 className={`logo ${activeTab === "dashboard" ? "active" : ""}`} onClick={() => setActiveTab("dashboard")}>
           <FaUserShield className="admin-icon" /> Admin Dashboard
         </h2>
+
+        <button className={activeTab === "users" ? "active" : ""} onClick={() => setActiveTab("users")}>
+         <FaUsers className="icon" /> Users
+          </button>
 
         <button className={activeTab === "resource" ? "active" : ""} onClick={() => setActiveTab("resource")}>
           <FaDatabase className="icon" /> Resource
@@ -194,94 +462,282 @@ const [isAdminOpen, setIsAdminOpen] = useState(false);
         )}
 
 
-{activeTab === "resource" && (
+{activeTab === "users" && (
   <div className="table-container active">
-     <div className="responsive-table">
-    <h2>Resource Management</h2>
-    
-    <button className="add-resource-btn" onClick={() => setShowAddResource(true)}>➕ Add Resource</button>
+    <div className="responsive-table">
+      <h2>User Management</h2>
 
-    {showAddResource && (
-      <div className="modal-overlay">
-        <div className="modal">
-          <h3>Add New Resource</h3>
-          <input
-            type="text"
-            placeholder="Resource Name"
-            value={newResource.name}
-            onChange={(e) => setNewResource({ ...newResource, name: e.target.value })}
-          />
-          <input
-            type="text"
-            placeholder="Category"
-            value={newResource.category}
-            onChange={(e) => setNewResource({ ...newResource, category: e.target.value })}
-          />
-          <div className="modal-buttons">
-            <button className="confirm-btn" onClick={handleAddResource}>Confirm</button>
-            <button className="delete-btn" onClick={() => setShowAddResource(false)}>Cancel</button>
+      {/* 🔍 حقل البحث */}
+      <input
+        type="text"
+        placeholder="Search by name or email..."
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        className="search-input"
+      />
+
+      {/* ➕ زر الإضافة */}
+      <button className="add-resource-btn" onClick={() => setShowAddUser(true)}>➕ Add User</button>
+
+      {/* نافذة منبثقة لإضافة مستخدم جديد */}
+      {showAddUser && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <h3>Add New User</h3>
+            <input
+              type="text"
+              placeholder="Full Name"
+              value={newUser.name}
+              onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
+            />
+            <input
+              type="email"
+              placeholder="Email"
+              value={newUser.email}
+              onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+            />
+            <select
+              value={newUser.role}
+              onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
+            >
+              <option value="">Select Role</option>
+              <option value="student">Student</option>
+              <option value="teacher">Teacher</option>
+              <option value="admin">Admin</option>
+              <option value="maintenance">Maintenance</option>
+
+            </select>
+            <div className="modal-buttons">
+              <button className="confirm-btn" onClick={handleAddUser}>Confirm</button>
+              <button className="delete-btn" onClick={() => setShowAddUser(false)}>Cancel</button>
+            </div>
           </div>
         </div>
-      </div>
-    )}
+      )}
 
-    <table border="1">
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Name</th>
-          <th>Category</th>
-        </tr>
-      </thead>
-      <tbody>
-        {resources.map((resource, index) => (
-          <tr key={index}>
-            <td>{index + 1}</td>
-            <td>{resource.name}</td>
-            <td>{resource.category}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
+      {/* نافذة منبثقة لتعديل بيانات المستخدم */}
+      {showEditUser && (
+  <div className="modal-overlay">
+    <div className="modal">
+      <h3>Edit User</h3>
+      <input
+        type="text"
+        placeholder="Full Name"
+        value={currentUser?.name || ''}
+        onChange={(e) => setCurrentUser({ ...currentUser, name: e.target.value })}
+      />
+      <input
+        type="email"
+        placeholder="Email"
+        value={currentUser?.email || ''}
+        onChange={(e) => setCurrentUser({ ...currentUser, email: e.target.value })}
+      />
+      <select
+        value={currentUser?.role || ''}
+        onChange={(e) => setCurrentUser({ ...currentUser, role: e.target.value })}
+      >
+        <option value="student">Student</option>
+        <option value="teacher">Teacher</option>
+        <option value="admin">Admin</option>
+        <option value="maintenance">Maintenance</option>
+      </select>
+
+      {/* حقل تعديل كلمة السر */}
+      <input
+        type="password"
+        placeholder="New Password"
+        value={currentUser?.newPassword || ''}
+        onChange={(e) => setCurrentUser({ ...currentUser, newPassword: e.target.value })}
+      />
+
+      <div className="modal-buttons">
+        <button className="confirm-btn" onClick={handleUpdateUser}>Confirm</button>
+        <button className="delete-btn" onClick={() => setShowEditUser(false)}>Cancel</button>
+      </div>
     </div>
   </div>
 )}
 
 
-{activeTab === "reservation" && (
-          <div className="table-container active">
-             <div className="responsive-table">
-            <h2>Reservation System</h2>
-            <table border="1" className="styled-table">
-              <thead>
-                <tr>
-                  <th>Booking ID</th>
-                  <th>Resource</th>
-                  <th>User</th>
-                  <th>Date</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {reservations.map(res => (
-                  <tr key={res.id}>
-                    <td>{res.id}</td>
-                    <td>{res.resource}</td>
-                    <td>{res.user}</td>
-                    <td>{res.date}</td>
-                    <td>
-                      <button className="confirm-btn" onClick={() => confirmReservation(res.id)}>✔ Confirm</button>
-                      <button className="delete-btn" onClick={() => deleteReservation(res.id)}>❌ Delete</button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+      {/* جدول المستخدمين */}
+      <table border="1">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {filteredUsers.map((user, index) => (
+            <tr key={user.id}>
+              <td>{index + 1}</td>
+              <td>{user.name}</td>
+              <td>{user.email}</td>
+              <td>{user.role}</td>
+              <td>
+                <button className="edit-btn" onClick={() => handleEditUser(user)}>✏️ Edit</button>
+                <button className="delete-btn" onClick={() => handleDeleteUser(user.id)}>🗑️ Delete</button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+)}
+
+
+
+
+{activeTab === "resource" && (
+  <div className="table-container active">
+    <div className="responsive-table">
+      <h2>Resource Management</h2>
+
+      {/* 🔍 محرك البحث */}
+      <input
+        type="text"
+        placeholder="🔍 Search by name, type, status, or location..."
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        className="search-input"
+      />
+
+      {/* ➕ زر الإضافة */}
+      <button className="add-resource-btn" onClick={() => setShowAddResource(true)}>➕ Add Resource</button>
+
+      {/* نافذة الإضافة */}
+      {showAddResource && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <h3>Add New Resource</h3>
+            <input
+              type="text"
+              placeholder="Resource Name"
+              value={newResource.name}
+              onChange={(e) => setNewResource({ ...newResource, name: e.target.value })}
+            />
+            <input
+              type="text"
+              placeholder="Type"
+              value={newResource.type}
+              onChange={(e) => setNewResource({ ...newResource, type: e.target.value })}
+            />
+            <input
+              type="text"
+              placeholder="Status"
+              value={newResource.status}
+              onChange={(e) => setNewResource({ ...newResource, status: e.target.value })}
+            />
+            <input
+              type="text"
+              placeholder="Location"
+              value={newResource.location}
+              onChange={(e) => setNewResource({ ...newResource, location: e.target.value })}
+            />
+            <div className="modal-buttons">
+              <button className="confirm-btn" onClick={handleAddResource}>Confirm</button>
+              <button className="delete-btn" onClick={() => setShowAddResource(false)}>Cancel</button>
             </div>
           </div>
-        )}
+        </div>
+      )}
 
-     
+      {/* نافذة التعديل */}
+{showEditResource && currentResource && (
+  <div className="modal-overlay">
+    <div className="modal">
+      <h3>Edit Resource</h3>
+      <input
+        type="text"
+        placeholder="Resource Name"
+        value={currentResource.name}
+        onChange={e => setCurrentResource({ ...currentResource, name: e.target.value })}
+      />
+      <input
+        type="text"
+        placeholder="Type"
+        value={currentResource.type}
+        onChange={e => setCurrentResource({ ...currentResource, type: e.target.value })}
+      />
+      <input
+        type="text"
+        placeholder="Status"
+        value={currentResource.status}
+        onChange={e => setCurrentResource({ ...currentResource, status: e.target.value })}
+      />
+      <input
+        type="text"
+        placeholder="Location"
+        value={currentResource.location}
+        onChange={e => setCurrentResource({ ...currentResource, location: e.target.value })}
+      />
+      <div className="modal-buttons">
+        <button className="confirm-btn" onClick={handleUpdateResource}>
+          Update
+        </button>
+        <button
+          className="delete-btn"
+          onClick={() => {
+            setShowEditResource(false);
+            setCurrentResource(null); // اختياري لتنظيف المورد الحالي
+          }}
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
+
+      {/* جدول الموارد */}
+      <table border="1">
+        <thead>
+  <tr>
+    <th>ID</th>
+    <th>Name</th>
+    <th>Type</th>{/* تغيير category إلى type */}
+    <th>Status</th>{/* إضافة status */}
+    <th>Location</th>{/* إضافة location */}
+    <th>Actions</th>
+  </tr>
+</thead>
+
+        <tbody>
+          {resources
+            .filter((resource) =>
+              resource.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              resource.type.toLowerCase().includes(searchQuery.toLowerCase()) ||  // إضافة type
+              resource.status.toLowerCase().includes(searchQuery.toLowerCase()) ||  // إضافة status
+              resource.location.toLowerCase().includes(searchQuery.toLowerCase())   // إضافة location
+            )
+            .map((resource, index) => (
+              <tr key={index}>
+                <td>{index + 1}</td>
+                <td>{resource.name}</td>
+                <td>{resource.type}</td>{/* تغيير category إلى type */}
+                <td>{resource.status}</td>{/* إضافة status */}
+                <td>{resource.location}</td>{/* إضافة location */}
+                <td>
+                  <button onClick={() => handleEditResource(resource)}>✏️ Edit</button>
+                  <button onClick={() => handleDeleteResource(resource.id)}>🗑️ Delete</button>
+                </td>
+              </tr>
+            ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+)}
+
+
+
+{activeTab === "reservation" && <TeacherBookingForm />}
+ 
        {activeTab === "maintenance" && (
         
       <>
@@ -315,12 +771,12 @@ const [isAdminOpen, setIsAdminOpen] = useState(false);
                     <td>{req.id}</td>
                     <td>{req.resource}</td>
                     <td className={req.status === "Fixed" ? "fixed-status" : "out-order-status"}>
-                      {req.status === "Fixed" ? "✔ مصلح" : "❌ غير مصلح"}
+                      {req.status === "Fixed" ? "✔ Repairman" : "❌ Not fixed"}
                     </td>
                     <td>
-                      <button className="repair-btn" onClick={() => requestRepair(req.id)}>🔧 طلب إصلاح</button>
-                      <button className="toggle-btn" onClick={() => toggleMaintenanceStatus(req.id)}>🔄 تغيير الحالة</button>
-                      <button className="delete-btn" onClick={() => deleteMaintenanceRequest(req.id)}>🗑️ حذف</button>
+                      {/* <button className="repair-btn" onClick={() => requestRepair(req.id)}>🔧 Repair request</button> */}
+                      <button className="toggle-btn" onClick={() => toggleMaintenanceStatus(req.id)}>🔄 Change status</button>
+                      <button className="delete-btn" onClick={() => deleteMaintenanceRequest(req.id)}>🗑️ Delete</button>
                     </td>
                   </tr>
                 ))}
@@ -331,9 +787,9 @@ const [isAdminOpen, setIsAdminOpen] = useState(false);
          
           </>
         
-        )}
+        )} 
 
-        {activeTab === "reports" && (
+        {/* {activeTab === "reports" && (
           <div className="reports-container active">
             <h2>Reports</h2>
             <button className="report-btn" onClick={() => setReportType("usage")}>
@@ -345,23 +801,139 @@ const [isAdminOpen, setIsAdminOpen] = useState(false);
 
             {reportType && (
               <div className="report-writing">
-                <h3>{reportType === "usage" ? "Usage Report" : "Reservation Report"}</h3>
-                <textarea id="reportText" placeholder="اكتب التقرير هنا..." />
+                <h3>{reportType === "usage" ? "Usage Report"
+                 : "Reservation Report"}</h3>
+                <textarea id="reportText" placeholder="Write your report here..." />
                 <button className="save-report-btn" onClick={() => {
                   let reportContent = document.getElementById("reportText").value;
                   if (reportContent.trim() === "") {
-                    alert("يرجى كتابة التقرير قبل الحفظ!");
+                    alert("Please write the report before saving!");
                   } else {
-                    alert("✅ تم حفظ التقرير بنجاح!");
+                    alert("✅ Report saved successfully!");
                   }
                 }}>
-                  💾 حفظ التقرير
+                  💾 Save the report
                 </button>
+ 
+
               </div>
             )}
           </div>
+        )} */}
+        {activeTab === "reports" && (
+  <div className="reports-container active">
+    <h2>Reports</h2>
+    <button className="report-btn" onClick={() => setReportType("usage")}>
+      Create Report Usage
+    </button>
+    <button className="report-btn" onClick={() => setReportType("reservation")}>
+      Create Report Reservation
+    </button>
+
+    {reportType && (
+  <div className="report-writing">
+    <h3>{reportType === "usage" ? "Usage Report" : "Reservation Report"}</h3>
+
+    {reportType === "usage" ? (
+      <>
+        {/* ✅ Resource Category & Resource Name */}
+        <label>Resource Category:</label>
+        <select
+          value={selectedCategory}
+          onChange={(e) => {
+            setSelectedCategory(e.target.value);
+            setSelectedResource("");
+          }}
+          required
+        >
+          <option value="">Select a category</option>
+          {Object.keys(resourceOptions).map((cat, i) => (
+            <option key={i} value={cat}>{cat}</option>
+          ))}
+        </select>
+
+        {selectedCategory && (
+          <>
+            <label>Resource Name:</label>
+            <select
+              value={selectedResource}
+              onChange={(e) => setSelectedResource(e.target.value)}
+              required
+            >
+              <option value="">Select a resource</option>
+              {resourceOptions[selectedCategory].map((res, i) => (
+                <option key={i} value={res}>{res}</option>
+              ))}
+            </select>
+          </>
         )}
+
+        <label>Issue Description:</label>
+        <textarea
+          rows="3"
+          placeholder="Describe the issue..."
+          value={issueDescription}
+          onChange={(e) => setIssueDescription(e.target.value)}
+          required
+        />
+      </>
+    ) : (
+      <>
+        {/* ✅ textarea لتقرير الحجز */}
+        <label>Reservation Report:</label>
+        <textarea
+          id="reportText"
+          placeholder="Write your reservation report here..."
+          required
+        />
+      </>
+    )}
+
+    <button className="save-report-btn" onClick={() => {
+      const content =
+        reportType === "usage" ? issueDescription.trim() : document.getElementById("reportText").value.trim();
+
+      if (reportType === "usage") {
+        if (!selectedCategory || !selectedResource || content === "") {
+          alert("Please fill in all fields!");
+          return;
+        }
+
+        setUsageReports(prev => [
+          ...prev,
+          `${selectedCategory} - ${selectedResource}: ${content}`
+        ]);
+
+        setMaintenanceNotifications(prev => [
+          ...prev,
+          `📢 Issue with ${selectedResource} (${selectedCategory}): ${content.slice(0, 40)}...`
+        ]);
+      } else {
+        if (content === "") {
+          alert("Please write the reservation report!");
+          return;
+        }
+
+        alert("📊 Reservation report saved successfully! (simulated)");
+      }
+
+      alert("✅ Report saved successfully!");
+      setSelectedCategory("");
+      setSelectedResource("");
+      setIssueDescription("");
+      document.getElementById("reportText").value = "";
+      setReportType("");
+    }}>
+      💾 Save the report
+    </button>
+  </div>
+)}
+
+  </div>
+)}
+
       </main>
+      </> )}
     </div>
   );
 };

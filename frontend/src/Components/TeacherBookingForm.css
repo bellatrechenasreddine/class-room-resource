@@ -108,7 +108,7 @@
   width: 100%;
   overflow: hidden;
   position: relative;
-  z-index: ;
+  
 }
 
 .resource-track {
@@ -405,11 +405,13 @@
   
   /* ✅ أماكن الأسهم */
   .carousel-btn.left {
+    background-color: #333;
     position: absolute;
     left: 100px;
   }
   
   .carousel-btn.right {
+    background-color: #333;
     position: absolute;
     right: 540px;
     
@@ -455,6 +457,16 @@
     border-radius: 5px;
     transition: border-color 0.3s ease-in-out;
     background-color: #d7daf8;
+  }
+  .booking-form input,
+  .booking-form select,
+  .booking-form textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    transition: border-color 0.3s ease-in-out;
+    background-color: #d7daf8; 
   }
   
   .form-group input:focus,

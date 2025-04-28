@@ -53,7 +53,7 @@ import ResetPassword from "./Components/ResetPassword"; // ✅ استيراد ص
 
 import "./styles.css"; // ✅ استيراد ملف CSS
    
-
+import MaintenancePage from "./Components/MaintenancePage"
 
 function App() {
   return (
@@ -78,6 +78,9 @@ function App() {
 
         {/* ✅ لوحة تحكم التلميذ */}
         <Route path="/student-dashboard" element={<StudentDashboard />} />
+        {/*لوحة الصيانة */}
+        <Route path="/maintenance-dashboard" element={<MaintenancePage />} />
+
       </Routes>
     </Router>
   );
