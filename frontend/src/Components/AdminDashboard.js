@@ -1,6 +1,6 @@
 
 // logout 
-import TeacherBookingForm from "./TeacherBookingForm"
+import BookingForm from "./BookingForm"
 
 import { useNavigate } from "react-router-dom";
 import { FaUsers } from "react-icons/fa";
@@ -128,7 +128,7 @@ const navigate = useNavigate();
     labels: ["Projector", "Whiteboard", "Laptop", "Tablet"],
     datasets: [
       {
-        label: "Reservations",
+        label: "Bookings",
         data: [10, 15, 8, 12],
         backgroundColor: "rgba(54, 162, 235, 0.5)",
       },
@@ -247,41 +247,41 @@ const navigate = useNavigate();
   
   
 
-// reservation maintananvce 
+// Bookings maintananvce 
 // 1. الحالة
-const [reservations, setReservations] = useState([]);
-const [newReservation, setNewReservation] = useState({ resource_id: '', user_id: '', start_time: '', end_time: '' });
+const [Bookings, setBookings] = useState([]);
+const [newBooking, setNewBooking] = useState({ id: '', resource_id: '', user_id: '', start_time: '', end_time: '', status: '' });
 const [showAddRes, setShowAddRes] = useState(false);
 const [searchResQuery, setSearchResQuery] = useState('');
 
 // 2. جلب الحجوزات
 useEffect(() => {
-  axios.get('http://localhost:5000/api/reservations')
-    .then(res => setReservations(res.data))
-    .catch(err => console.error('Failed to fetch reservations', err));
+  axios.get('http://localhost:5000/api/vs')
+    .then(res => setBookings(res.data))
+    .catch(err => console.error('Failed to fetch Bookings', err));
 }, []);
 
 // 3. إضافة حجز جديد
-const handleAddReservation = async () => {
+const handleAddBooking = async () => {
   try {
-    const res = await axios.post('http://localhost:5000/api/reservations', newReservation);
-    setReservations([...reservations, res.data]);
+    const res = await axios.post('http://localhost:5000/api/Bookings', newBooking);
+    setBookings([...Bookings, res.data]);
     setShowAddRes(false);
-    setNewReservation({ resource_id: '', user_id: '', start_time: '', end_time: '' });
+    setNewBooking({ id: '', resource_id: '', user_id: '', start_time: '', end_time: '' });
   } catch (err) {
-    console.error('Error adding reservation', err);
+    console.error('Error adding Booking', err);
     alert('حدث خطأ أثناء إضافة الحجز');
   }
 };
 
 // 4. حذف حجز
-const handleDeleteReservation = async (id) => {
+const handleDeleteBooking = async (id) => {
   if (!window.confirm('هل تريد إلغاء هذا الحجز؟')) return;
   try {
-    await axios.delete(`http://localhost:5000/api/reservations/${id}`);
-    setReservations(reservations.filter(r => r.id !== id));
+    await axios.delete(`http://localhost:5000/api/Bookings/${id}`);
+    setBookings(Bookings.filter(r => r.id !== id));
   } catch (err) {
-    console.error('Error deleting reservation', err);
+    console.error('Error deleting Booking', err);
     alert('حدث خطأ أثناء إلغاء الحجز');
   }
 };
@@ -343,8 +343,8 @@ const [maintenanceNotifications, setMaintenanceNotifications] = useState([
 ]);
 
 const [notifications, setNotifications] = useState([
-"🔔 A new reservation request is pending!",
-"🔔 A new reservation has been approved.",
+"🔔 A new Booking request is pending!",
+"🔔 A new Booking has been approved.",
 "🔔 A new issue has been reported!"
 ]);
 const [isAdminOpen, setIsAdminOpen] = useState(false);
@@ -365,7 +365,7 @@ const [isAdminOpen, setIsAdminOpen] = useState(false);
   useEffect(() => {
     // محاكاة تحميل البيانات من API مع تأخير
     setTimeout(() => {
-      setReservations([
+      setBookings([
         { id: 101, resource: "Projector", user: "John Doe", date: "2025-04-01" },
         { id: 102, resource: "Whiteboard", user: "Jane Smith", date: "2025-04-02" }
       ]);
@@ -427,8 +427,8 @@ const handleDelete = (index) => {
         <button className={activeTab === "resource" ? "active" : ""} onClick={() => setActiveTab("resource")}>
           <FaDatabase className="icon" /> Resource
         </button>
-        <button className={activeTab === "reservation" ? "active" : ""} onClick={() => setActiveTab("reservation")}>
-          <FaClipboardList className="icon" /> Reservation
+        <button className={activeTab === "Booking" ? "active" : ""} onClick={() => setActiveTab("Booking")}>
+          <FaClipboardList className="icon" /> Booking
         </button>
         <button className={activeTab === "maintenance" ? "active" : ""} onClick={() => setActiveTab("maintenance")}>
           <FaCogs className="icon" /> Maintenance
@@ -453,7 +453,7 @@ const handleDelete = (index) => {
             <h2>Dashboard Overview</h2>
             <div className="charts-container">
               <div className="chart-box">
-                <h3>Reservations Statistics</h3>
+                <h3>Bookings Statistics</h3>
                 <Bar data={barData}  options={barOptions}/>
               </div>
               
@@ -736,12 +736,11 @@ const handleDelete = (index) => {
 
 
 
-{activeTab === "reservation" && <TeacherBookingForm />}
- 
-       {activeTab === "maintenance" && (
+{activeTab === "Booking" && <BookingForm />}
+
+{activeTab === "maintenance" && (
         
-      <>
-       
+      <>       
         {/* ✅ أيقونة الجرس للإشعارات */}
         <div className="notification-icon" onClick={toggleMaintenanceNotifications}>
         <FaBell size={24} />
@@ -795,14 +794,14 @@ const handleDelete = (index) => {
             <button className="report-btn" onClick={() => setReportType("usage")}>
               Create Report Usage
             </button>
-            <button className="report-btn" onClick={() => setReportType("reservation")}>
-              Create Report Reservation
+            <button className="report-btn" onClick={() => setReportType("Booking")}>
+              Create Report Booking
             </button>
 
             {reportType && (
               <div className="report-writing">
                 <h3>{reportType === "usage" ? "Usage Report"
-                 : "Reservation Report"}</h3>
+                 : "Booking Report"}</h3>
                 <textarea id="reportText" placeholder="Write your report here..." />
                 <button className="save-report-btn" onClick={() => {
                   let reportContent = document.getElementById("reportText").value;
@@ -826,13 +825,13 @@ const handleDelete = (index) => {
     <button className="report-btn" onClick={() => setReportType("usage")}>
       Create Report Usage
     </button>
-    <button className="report-btn" onClick={() => setReportType("reservation")}>
-      Create Report Reservation
+    <button className="report-btn" onClick={() => setReportType("Booking")}>
+      Create Report Booking
     </button>
 
     {reportType && (
   <div className="report-writing">
-    <h3>{reportType === "usage" ? "Usage Report" : "Reservation Report"}</h3>
+    <h3>{reportType === "usage" ? "Usage Report" : "Booking Report"}</h3>
 
     {reportType === "usage" ? (
       <>
@@ -880,10 +879,10 @@ const handleDelete = (index) => {
     ) : (
       <>
         {/* ✅ textarea لتقرير الحجز */}
-        <label>Reservation Report:</label>
+        <label>Booking Report:</label>
         <textarea
           id="reportText"
-          placeholder="Write your reservation report here..."
+          placeholder="Write your Booking report here..."
           required
         />
       </>
@@ -910,11 +909,11 @@ const handleDelete = (index) => {
         ]);
       } else {
         if (content === "") {
-          alert("Please write the reservation report!");
+          alert("Please write the Booking report!");
           return;
         }
 
-        alert("📊 Reservation report saved successfully! (simulated)");
+        alert("📊 Booking report saved successfully! (simulated)");
       }
 
       alert("✅ Report saved successfully!");

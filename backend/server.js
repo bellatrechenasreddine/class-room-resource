@@ -17,13 +17,13 @@ app.use(cors(corsOptions));
 const userRoutes = require('./routes/userRoutes');// استيراد API المستخدمين
 const resourcesRouter = require('./routes/resources');  // استيراد API الموارد
 
-const reservationRoutes = require('./routes/reservationRoutes');
+const BookingRoutes = require('./routes/BookingRoutes');
 // تمكين استقبال JSON
 app.use(express.json());
 
 app.use('/api/users', userRoutes);
 app.use('/api/resources', resourcesRouter);
-app.use('/api/reservations', reservationRoutes);
+app.use('/api/Bookings', BookingRoutes);
 
 
 // مسار تسجيل الدخول

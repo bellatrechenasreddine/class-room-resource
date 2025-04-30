@@ -2,8 +2,8 @@ import { useNavigate } from "react-router-dom";
 import React, { useState } from "react";
 import { FaBars, FaCalendarCheck, FaHistory, FaExclamationTriangle, FaSignOutAlt, FaChalkboardTeacher } from "react-icons/fa";
 import "./StudentDashboard.css";
-import TeacherBookingForm from "./TeacherBookingForm";
-import BookingForm from "./BookingForm"
+import BookingForm from "./BookingForm";
+import HistoryBooking from "./HistoryBooking"
 import ReportForm from "./ReportForm"
 import NotificationBox from "../Components/NotificationBox"; // ✅ استيراد صندوق الإشعارات
 import { FaBell } from "react-icons/fa"; // ✅ أيقونة الجرس
@@ -157,9 +157,9 @@ const [isOpen, setIsOpen] = useState(false); // ✅ حالة التحكم في �
   </div>
 )} */}
 
-{activeTab === "booking" && <TeacherBookingForm />}
+{activeTab === "booking" && <BookingForm />}
 
-{activeTab === "history" && <BookingForm />}
+{activeTab === "history" && <HistoryBooking />}
 {activeTab === "report" && <ReportForm />}
       </main>
     </div>
