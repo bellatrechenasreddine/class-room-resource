@@ -164,7 +164,9 @@ const navigate = useNavigate();
   const [showEditResource, setShowEditResource] = useState(false);  
   const [currentResource, setCurrentResource] = useState(null);
   const [searchResourceQuery, setSearchResourceQuery] = useState('');
-  
+  const [customType, setCustomType] = useState(""); // لتخزين النوع اليدوي
+  const [customLocation, setCustomLocation] = useState("");
+
 
   
   // جلب جميع الموارد من الباك اند
@@ -184,19 +186,25 @@ const navigate = useNavigate();
   const filteredResources = resources.filter(resource =>
     resource.name.toLowerCase().includes(searchResourceQuery.toLowerCase()) ||
     resource.type.toLowerCase().includes(searchResourceQuery.toLowerCase()) ||   // تغيير category إلى type
-    resource.status.toLowerCase().includes(searchResourceQuery.toLowerCase()) || // إضافة status
     resource.location.toLowerCase().includes(searchResourceQuery.toLowerCase()) // إضافة location
   );
   
   // إضافة مورد جديد
   const handleAddResource = async () => {
-    if (newResource.name && newResource.type && newResource.status && newResource.location) {  // تحقق من جميع الحقول
+    const typeToUse = newResource.type === "custom" ? customType : newResource.type;
+  
+    if (newResource.name && typeToUse && newResource.location) {
       try {
-        const response = await axios.post('http://localhost:5000/api/resources', newResource);
+        const response = await axios.post('http://localhost:5000/api/resources', {
+          ...newResource,
+          type: typeToUse
+        });
         const addedResource = response.data;
   
         setResources([...resources, addedResource]);
-        setNewResource({ name: "", type: "", status: "", location: "" });  // إعادة تعيين الحقول
+        setNewResource({ name: "", type: "", location: "" });
+        setCustomType("");  // تفريغ النوع اليدوي
+        setCustomLocation("");
         setShowAddResource(false);
       } catch (error) {
         console.error("Error adding resource", error);
@@ -207,6 +215,7 @@ const navigate = useNavigate();
     }
   };
   
+  
   // تعديل مورد
   const handleEditResource = (resource) => {
     setCurrentResource(resource);
@@ -215,7 +224,7 @@ const navigate = useNavigate();
   
   // تأكيد التعديل
   const handleUpdateResource = async () => {
-    if (currentResource.name && currentResource.type && currentResource.status && currentResource.location) {  // تحقق من جميع الحقول
+    if (currentResource.name && currentResource.type && currentResource.location) {  // تحقق من جميع الحقول
       try {
         const response = await axios.put(`http://localhost:5000/api/resources/${currentResource.id}`, currentResource);
         const updatedResource = response.data;
@@ -256,9 +265,9 @@ const [searchResQuery, setSearchResQuery] = useState('');
 
 // 2. جلب الحجوزات
 useEffect(() => {
-  axios.get('http://localhost:5000/api/vs')
+  axios.get('http://localhost:5000/api/bookings')
     .then(res => setBookings(res.data))
-    .catch(err => console.error('Failed to fetch Bookings', err));
+    .catch(err => console.error('Failed to fetch bookings', err));
 }, []);
 
 // 3. إضافة حجز جديد
@@ -283,6 +292,14 @@ const handleDeleteBooking = async (id) => {
   } catch (err) {
     console.error('Error deleting Booking', err);
     alert('حدث خطأ أثناء إلغاء الحجز');
+  }
+};
+const toggleActive = async (id, newStatus) => {
+  try {
+    await axios.patch(`http://localhost:5000/api/resources/${id}/active`, { is_active: newStatus });
+    setResources(resources.map(r => r.id === id ? { ...r, is_active: newStatus } : r));
+  } catch (err) {
+    console.error("Error toggling resource", err);
   }
 };
 
@@ -590,8 +607,6 @@ const handleDelete = (index) => {
 )}
 
 
-
-
 {activeTab === "resource" && (
   <div className="table-container active">
     <div className="responsive-table">
@@ -614,30 +629,59 @@ const handleDelete = (index) => {
         <div className="modal-overlay">
           <div className="modal">
             <h3>Add New Resource</h3>
+            <select
+              value={newResource.type}
+              onChange={(e) => setNewResource({ ...newResource, type: e.target.value })}
+            >
+              <option value="">-- Select Type --</option>
+              <option value="Meeting Room">Meeting Room</option>
+              <option value="Classroom">Classroom</option>
+              <option value="Lab">Lab</option>
+              <option value="Projector">Projector</option>
+              <option value="Computer">Computer</option>
+              <option value="Camera">Camera</option>
+              <option value="Microphone">Microphone</option>
+              <option value="Speaker">Speaker</option>
+              <option value="custom">➕ Add New Type</option>
+            </select>
+            
+            {/* عرض حقل الإدخال إذا اختار المستخدم "custom" */}
+            {newResource.type === "custom" && (
+              <input
+                type="text"
+                placeholder="Enter new type"
+                value={customType}
+                onChange={(e) => setCustomType(e.target.value)}
+              />
+            )}
             <input
               type="text"
               placeholder="Resource Name"
               value={newResource.name}
               onChange={(e) => setNewResource({ ...newResource, name: e.target.value })}
             />
-            <input
-              type="text"
-              placeholder="Type"
-              value={newResource.type}
-              onChange={(e) => setNewResource({ ...newResource, type: e.target.value })}
-            />
-            <input
-              type="text"
-              placeholder="Status"
-              value={newResource.status}
-              onChange={(e) => setNewResource({ ...newResource, status: e.target.value })}
-            />
-            <input
-              type="text"
-              placeholder="Location"
+            <select
               value={newResource.location}
               onChange={(e) => setNewResource({ ...newResource, location: e.target.value })}
-            />
+            >
+              <option value="">-- Select Location --</option>
+              <option value="College A">College A</option>
+              <option value="College B">College B</option>
+              <option value="College C">College C</option>
+              <option value="custom">➕ Add New Location</option>
+            </select>
+            
+            {/* إدخال مكان مخصص */}
+            {newResource.location === "custom" && (
+              <input
+                type="text"
+                placeholder="Enter new location"
+                value={customLocation}
+                onChange={(e) => setCustomLocation(e.target.value)}
+              />
+            )}
+
+
             <div className="modal-buttons">
               <button className="confirm-btn" onClick={handleAddResource}>Confirm</button>
               <button className="delete-btn" onClick={() => setShowAddResource(false)}>Cancel</button>
@@ -651,30 +695,57 @@ const handleDelete = (index) => {
   <div className="modal-overlay">
     <div className="modal">
       <h3>Edit Resource</h3>
+      <select
+        value={newResource.type}
+        onChange={(e) => setNewResource({ ...newResource, type: e.target.value })}
+      >
+        <option value="">-- Select Type --</option>
+        <option value="Meeting Room">Meeting Room</option>
+        <option value="Classroom">Classroom</option>
+        <option value="Lab">Lab</option>
+        <option value="Projector">Projector</option>
+        <option value="Computer">Computer</option>
+        <option value="Camera">Camera</option>
+        <option value="Microphone">Microphone</option>
+        <option value="Speaker">Speaker</option>
+        <option value="custom">➕ Add New Type</option>
+      </select>
+      
+      {/* عرض حقل الإدخال إذا اختار المستخدم "custom" */}
+      {newResource.type === "custom" && (
+        <input
+          type="text"
+          placeholder="Enter new type"
+          value={customType}
+          onChange={(e) => setCustomType(e.target.value)}
+        />
+      )}
       <input
         type="text"
         placeholder="Resource Name"
         value={currentResource.name}
         onChange={e => setCurrentResource({ ...currentResource, name: e.target.value })}
       />
-      <input
-        type="text"
-        placeholder="Type"
-        value={currentResource.type}
-        onChange={e => setCurrentResource({ ...currentResource, type: e.target.value })}
-      />
-      <input
-        type="text"
-        placeholder="Status"
-        value={currentResource.status}
-        onChange={e => setCurrentResource({ ...currentResource, status: e.target.value })}
-      />
-      <input
-        type="text"
-        placeholder="Location"
-        value={currentResource.location}
-        onChange={e => setCurrentResource({ ...currentResource, location: e.target.value })}
-      />
+      <select
+              value={newResource.location}
+              onChange={(e) => setNewResource({ ...newResource, location: e.target.value })}
+            >
+              <option value="">-- Select Location --</option>
+              <option value="College A">College A</option>
+              <option value="College B">College B</option>
+              <option value="College C">College C</option>
+              <option value="custom">➕ Add New Location</option>
+            </select>
+            
+            {/* إدخال مكان مخصص */}
+            {newResource.location === "custom" && (
+              <input
+                type="text"
+                placeholder="Enter new location"
+                value={customLocation}
+                onChange={(e) => setCustomLocation(e.target.value)}
+              />
+            )}
       <div className="modal-buttons">
         <button className="confirm-btn" onClick={handleUpdateResource}>
           Update
@@ -697,31 +768,38 @@ const handleDelete = (index) => {
       {/* جدول الموارد */}
       <table border="1">
         <thead>
-  <tr>
-    <th>ID</th>
-    <th>Name</th>
-    <th>Type</th>{/* تغيير category إلى type */}
-    <th>Status</th>{/* إضافة status */}
-    <th>Location</th>{/* إضافة location */}
-    <th>Actions</th>
-  </tr>
-</thead>
-
+          <tr>
+            <th>ID</th>
+            <th>Type</th>
+            <th>Name</th>
+            <th>Location</th>
+            <th>Active</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
         <tbody>
           {resources
             .filter((resource) =>
               resource.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-              resource.type.toLowerCase().includes(searchQuery.toLowerCase()) ||  // إضافة type
-              resource.status.toLowerCase().includes(searchQuery.toLowerCase()) ||  // إضافة status
-              resource.location.toLowerCase().includes(searchQuery.toLowerCase())   // إضافة location
+              resource.type.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              resource.location.toLowerCase().includes(searchQuery.toLowerCase())
             )
             .map((resource, index) => (
               <tr key={index}>
                 <td>{index + 1}</td>
+                <td>{resource.type}</td>
                 <td>{resource.name}</td>
-                <td>{resource.type}</td>{/* تغيير category إلى type */}
-                <td>{resource.status}</td>{/* إضافة status */}
-                <td>{resource.location}</td>{/* إضافة location */}
+                <td>{resource.location}</td>
+      
+                {/* ✅ خانة تفعيل / تعطيل */}
+                <td>
+                  <input
+                    type="checkbox"
+                    checked={resource.is_active}
+                    onChange={() => toggleActive(resource.id, !resource.is_active)}
+                  />
+                </td>
+      
                 <td>
                   <button onClick={() => handleEditResource(resource)}>✏️ Edit</button>
                   <button onClick={() => handleDeleteResource(resource.id)}>🗑️ Delete</button>

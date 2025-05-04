@@ -19,14 +19,14 @@ router.get('/', async (req, res) => {
 // إضافة مورد جديد
 router.post('/', async (req, res) => {
   try {
-    const { name, type, status, location } = req.body;
-    if (!name || !type || !status || !location) {
-      return res.status(400).json({ message: 'Please provide name, type, status, and location' });
+    const { name, type, location } = req.body;
+    if (!name || !type || !location) {
+      return res.status(400).json({ message: 'Please provide name, type, and location' });
     }
 
     const newResource = await pool.query(
-      'INSERT INTO resources (name, type, status, location) VALUES ($1, $2, $3, $4) RETURNING *',
-      [name, type, status, location]
+      'INSERT INTO resources (name, type, location) VALUES ($1, $2, $3) RETURNING *',
+      [name, type, location]
     );
 
     res.status(201).json(newResource.rows[0]);
@@ -38,10 +38,10 @@ router.post('/', async (req, res) => {
 // تعديل مورد
 router.put('/:id', async (req, res) => {
   const { id } = req.params;  // استخراج الـ ID من الـ URL
-  const { name, type, status, location } = req.body;  // استخراج البيانات الجديدة من الجسم
+  const { name, type, location } = req.body;  // استخراج البيانات الجديدة من الجسم
 
-  if (!name || !type || !status || !location) {
-    return res.status(400).json({ message: 'Please provide name, type, status, and location' });
+  if (!name || !type || !location) {
+    return res.status(400).json({ message: 'Please provide name, type, and location' });
   }
 
   try {
@@ -53,8 +53,8 @@ router.put('/:id', async (req, res) => {
 
     // تحديث المورد
     const updatedResource = await pool.query(
-      'UPDATE resources SET name = $1, type = $2, status = $3, location = $4 WHERE id = $5 RETURNING *',
-      [name, type, status, location, id]
+      'UPDATE resources SET name = $1, type = $2, location = $3 WHERE id = $4 RETURNING *',
+      [name, type, location, id]
     );
 
     res.json(updatedResource.rows[0]);  // إرسال المورد المحدث

@@ -32,7 +32,7 @@ router.post("/login", async (req, res) => {
 
     // إنشاء JWT
     const token = jwt.sign(
-        { userId: user.rows[0].id, role: user.rows[0].role },
+        { id: user.rows[0].id, role: user.rows[0].role },
         process.env.JWT_SECRET,
         { expiresIn: "1h" } // انتهاء الصلاحية بعد ساعة
     );

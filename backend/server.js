@@ -23,7 +23,7 @@ app.use(express.json());
 
 app.use('/api/users', userRoutes);
 app.use('/api/resources', resourcesRouter);
-app.use('/api/Bookings', BookingRoutes);
+app.use('/api/bookings', BookingRoutes);
 
 
 // مسار تسجيل الدخول

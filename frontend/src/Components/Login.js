@@ -16,6 +16,7 @@ export default function Login() {
     }
 
     try {
+      // إرسال البيانات إلى الـ API لتسجيل الدخول
       const response = await axios.post("http://localhost:5000/api/auth/login", {
         email: email.trim(),
         password,
@@ -26,21 +27,27 @@ export default function Login() {
       // حفظ التوكن في localStorage
       localStorage.setItem("token", token);
 
-      // استخراج بيانات التوكن لمعرفة الدور (اختياري الآن)
+      // استخراج بيانات التوكن لمعرفة الدور
       const payload = JSON.parse(atob(token.split('.')[1]));
       const userRole = payload.role;
-    
-      // التوجيه حسب الدور
-      if (userRole === "admin") {
-        navigate("/admin-dashboard");
-      } else if (userRole === "teacher") {
-        navigate("/teacher-dashboard");
-      } else if (userRole === "student") {
-        navigate("/student-dashboard");
-      } else if (userRole === "maintenance") {
-        navigate("/maintenance-dashboard");  // إضافة مسار خاص بالـ Maintenance
-      } else {
-        setError("Unknown role");
+
+      // التوجيه بناءً على الدور
+      switch (userRole) {
+        case "admin":
+          navigate("/admin-dashboard");
+          break;
+        case "teacher":
+          navigate("/teacher-dashboard");
+          break;
+        case "student":
+          navigate("/student-dashboard");
+          break;
+        case "maintenance":
+          navigate("/maintenance-dashboard");
+          break;
+        default:
+          setError("Unknown role");
+          break;
       }
 
     } catch (error) {
