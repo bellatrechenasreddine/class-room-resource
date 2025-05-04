@@ -206,6 +206,20 @@ const BookingForm = () => {
   const [resources, setResources] = useState([]);
   const carouselRef = useRef(null);
   const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState('');
+
+
+  // لإخفاء الرسالة بعد 5 ثواني تلقائياً
+useEffect(() => {
+  if (errorMessage) {
+    const timer = setTimeout(() => {
+      setErrorMessage('');
+    }, 5000); // الرسائل تختفي بعد 5 ثواني
+
+    return () => clearTimeout(timer); // تنظيف المؤقت عند تغيّر الرسالة
+  }
+}, [errorMessage]);
+
 
   const scrollLeft = () => {
     if (carouselRef.current) {
@@ -245,50 +259,59 @@ const BookingForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     const formData = new FormData(e.target);
-
     const bookingDate = formData.get('bookingDate');
     const startTime = formData.get('startTime');
     const endTime = formData.get('endTime');
-
+  
     const startDate = new Date(bookingDate + 'T' + startTime + ':00');
     const endDate = new Date(bookingDate + 'T' + endTime + ':00');
-
+  
     if (endDate <= startDate) {
       alert("⚠️ وقت النهاية يجب أن يكون بعد وقت البداية.");
       return;
     }
-
+  
     const token = localStorage.getItem("token");
     if (!token) {
       alert("يرجى تسجيل الدخول أولاً");
       return;
     }
-
+  
     const bookingData = {
       resource_id: selectedResource.id,
       booking_date: bookingDate,
       start_time: startDate.toTimeString().split(' ')[0],
       end_time: endDate.toTimeString().split(' ')[0],
     };
-
+  
     try {
       const response = await axios.post(
         'http://localhost:5000/api/bookings',
         bookingData,
         {
           headers: {
-            Authorization: `Bearer ${token}`,  // التأكد من إرسال التوكن بشكل صحيح
+            Authorization: `Bearer ${token}`,
           }
         }
       );
+  
       console.log('Booking created:', response.data);
+      setErrorMessage('');
+      setShowModal(true); // عرض المودال عند النجاح
+  
+      // إغلاق المودال تلقائياً بعد 3 ثواني
+      setTimeout(() => {
+        setShowModal(false);
+      }, 3000);
+      
     } catch (error) {
       console.error('Error creating booking:', error);
-      alert("حدث خطأ أثناء الحجز. يرجى المحاولة مرة أخرى.");
+      setErrorMessage('Failed to create booking. Please try again.');
     }
-};
+  };
+  
 
 
   return (
@@ -320,22 +343,22 @@ const BookingForm = () => {
             <input type="text" value={selectedResource.name} readOnly />
           </div>
           <div style={{ textAlign: "center", marginBottom: "15px" }}>
-  <label style={{ display: "block", fontWeight: "bold", marginBottom: "5px" }}>
-    Booking Date
-  </label>
-  <input type="date" name="bookingDate" required style={{ padding: "8px", borderRadius: "6px", border: "1px solid #ccc" }} />
-</div>
+            <label style={{ display: "block", fontWeight: "bold", marginBottom: "5px" }}>
+              Booking Date
+            </label>
+            <input type="date" name="bookingDate" required style={{ padding: "8px", borderRadius: "6px", border: "1px solid #ccc" }} />
+          </div>
 
-<div style={{ display: "flex", gap: "20px", justifyContent: "center" }}>
-  <div>
-    <label>Start Time</label>
-    <input type="time" name="startTime" required />
-  </div>
-  <div>
-    <label>End Time</label>
-    <input type="time" name="endTime" required />
-  </div>
-</div>
+          <div style={{ display: "flex", gap: "20px", justifyContent: "center" }}>
+            <div>
+              <label>Start Time</label>
+              <input type="time" name="startTime" required />
+            </div>
+            <div>
+              <label>End Time</label>
+              <input type="time" name="endTime" required />
+            </div>
+          </div>
 
 
           <div className="form-buttons">
@@ -353,8 +376,9 @@ const BookingForm = () => {
           </div>
         </form>
       )}
-
+       
       {/* ✅ نافذة تأكيد بعد الحجز */}
+    
       {showModal && (
         <div className="modal-overlay">
           <div className="modal">
