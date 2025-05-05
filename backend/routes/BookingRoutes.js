@@ -15,8 +15,46 @@ router.get('/', async (req, res) => {
 
 
 // إضافة حجز جديد
+// router.post('/', verifyToken, async (req, res) => {
+//   console.log('Received booking data:', req.body); // ✅ أضف هذا
+//   const { resource_id, start_time, end_time, booking_date } = req.body;
+//   const user_id = req.user.id; // استخراج id من التوكن
+
+//   // التحقق من وجود user_id في الطلب
+//   if (!user_id) {
+//     return res.status(400).json({ message: 'User ID is missing in the request.' });
+//   }
+
+//   // التحقق من وجود كل الحقول المطلوبة
+//   if (!resource_id || !start_time || !end_time || !booking_date) {
+//     return res.status(400).json({ message: 'Please provide all required fields' });
+//   }
+
+//   try {
+//     // تحقق من حالة المورد قبل السماح بالحجز
+//     const resourceCheck = await pool.query(
+//       'SELECT is_active FROM resources WHERE id = $1',
+//       [resource_id]
+//     );
+
+//     if (resourceCheck.rows.length === 0 || !resourceCheck.rows[0].is_active) {
+//       return res.status(400).json({ message: 'Resource is not available for booking' });
+//     }
+
+//     const inserted = await pool.query(
+//       `INSERT INTO bookings (resource_id, user_id, start_time, end_time, booking_date)
+//        VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+//       [resource_id, user_id, start_time, end_time, booking_date]
+//     );
+//     res.status(201).json(inserted.rows[0]);
+//   } catch (err) {
+//     console.error('Error creating booking:', err);
+//     res.status(500).json({ message: 'Internal server error' });
+//   }
+// });
+
 router.post('/', verifyToken, async (req, res) => {
-  console.log('Received booking data:', req.body); // ✅ أضف هذا
+  console.log('Received booking data:', req.body); // ✅ أضف هذا لتتبع البيانات القادمة
   const { resource_id, start_time, end_time, booking_date } = req.body;
   const user_id = req.user.id; // استخراج id من التوكن
 
@@ -41,17 +79,49 @@ router.post('/', verifyToken, async (req, res) => {
       return res.status(400).json({ message: 'Resource is not available for booking' });
     }
 
+    // التحقق من التداخل مع الحجوزات الموجودة
+    const conflictQuery = `
+      SELECT start_time, end_time FROM bookings 
+      WHERE resource_id = $1 
+        AND booking_date = $2
+        AND NOT (
+          end_time <= $3 OR start_time >= $4
+        );
+    `;
+    const conflictResult = await pool.query(conflictQuery, [
+      resource_id,
+      booking_date,
+      start_time,
+      end_time
+    ]);
+
+    if (conflictResult.rows.length > 0) {
+      const conflictingBooking = conflictResult.rows[0];
+    
+      return res.status(409).json({
+        message: `⚠️ This resource is already booked on ${booking_date} from ${conflictingBooking.start_time} to ${conflictingBooking.end_time}. Please choose another time.`,
+      });
+    }
+    
+
+    // لا يوجد تضارب، احجز الآن
     const inserted = await pool.query(
       `INSERT INTO bookings (resource_id, user_id, start_time, end_time, booking_date)
        VALUES ($1, $2, $3, $4, $5) RETURNING *`,
       [resource_id, user_id, start_time, end_time, booking_date]
     );
+
     res.status(201).json(inserted.rows[0]);
+
   } catch (err) {
     console.error('Error creating booking:', err);
     res.status(500).json({ message: 'Internal server error' });
   }
 });
+
+
+
+
 
 
 

@@ -535,4 +535,94 @@
   }
   
 
+  .carousel-container {
+    overflow-x: auto;
+    margin: 20px 0;
+  }
   
+  .carousel {
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+    padding: 10px;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+  }
+  
+  .resource-card {
+    flex: 0 0 auto;
+    text-align: center;
+  }
+  .carousel-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 20px 0;
+  }
+
+  .carousel {
+    display: flex;
+    overflow-x: auto;
+    gap: 20px;
+    scroll-behavior: smooth;
+  }
+  
+  .resource-card {
+    flex: 0 0 auto;
+    text-align: center;
+  }
+  .resource-list {
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    gap: 20px;
+    padding: 10px;
+    scroll-behavior: smooth;
+  }
+  
+      
+  
+
+
+  .resource-list-wrapper {
+    display: flex;
+    align-items: center;
+    position: relative;
+    margin: 20px 0;
+  }
+  
+  .scroll-btn {
+    background-color: #222 !important; /* أسود داكن */
+    color: white !important;
+    border: none !important;
+    font-size: 18px;
+    padding: 10px;
+    cursor: pointer;
+    border-radius: 50%;
+    margin: 0 5px;
+  }
+  .scroll-btn:hover {
+    background-color: #444 !important;
+  }
+
+  
+  .resource-list {
+    display: flex;
+    overflow-x: auto;
+    gap: 20px;
+    padding: 10px;
+    scroll-behavior: smooth;
+    max-width: 80%;
+  }
+  
+  .resource-card {
+    text-align: center;
+    min-width: 120px;
+    flex-shrink: 0;
+  }
+   
+
+
+  
+  
+      
