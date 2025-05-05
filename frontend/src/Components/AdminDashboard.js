@@ -304,55 +304,6 @@ const toggleActive = async (id, newStatus) => {
 };
 
 
-// طلب إصلاح
-const requestRepair = (id) => {
-  setLoading(true);
-  setTimeout(() => {
-    console.log(`🔧 تم طلب إصلاح للمورد رقم ${id}`);
-    setLoading(false);
-  }, 1500);
-};
-
-// const requestRepair = (id) => {
-//   console.log(`🔧 تم طلب إصلاح للمورد رقم ${id}`);
-// };
-
-// تغيير حالة الصيانة
-const toggleMaintenanceStatus = (id) => {
-  setLoading(true);
-  setTimeout(() => {
-    setMaintenanceRequests(prevRequests =>
-      prevRequests.map(req =>
-        req.id === id ? {
-          ...req,
-          status: req.status === "Fixed" ? "Out of Order" : "Fixed"
-        } : req
-      )
-    );
-    setLoading(false);
-  }, 1500);
-};
-
-// const toggleMaintenanceStatus = (id) => {
-//   setMaintenanceRequests(prevRequests =>
-//     prevRequests.map(req =>
-//       req.id === id ? { ...req, status: req.status === "Fixed" ? "Out of Order" : "Fixed" } : req
-//     )
-//   );
-// };
-
-// حذف طلب الصيانة
-const deleteMaintenanceRequest = (id) => {
-  setLoading(true);
-  setTimeout(() => {
-    setMaintenanceRequests(maintenanceRequests.filter(req => req.id !== id));
-    setLoading(false);
-  }, 1500);
-};
-
-// const deleteMaintenanceRequest = (id) => {
-//   setMaintenanceRequests(maintenanceRequests.filter(req => req.id !== id));
-// };
 // Notification 
 const [maintenanceNotifications, setMaintenanceNotifications] = useState([
   "⚙️Alert: Faulty device in lab 3",
@@ -413,7 +364,7 @@ const handleDelete = (index) => {
 
   return (
     <div className="dashboard-container">
-       {loading ? (
+      {loading ? (
         <Loader /> // ✅ عرض اللودر أثناء التحميل
       ) : (
         <>
@@ -438,7 +389,7 @@ const handleDelete = (index) => {
         </h2>
 
         <button className={activeTab === "users" ? "active" : ""} onClick={() => setActiveTab("users")}>
-         <FaUsers className="icon" /> Users
+        <FaUsers className="icon" /> Users
           </button>
 
         <button className={activeTab === "resource" ? "active" : ""} onClick={() => setActiveTab("resource")}>
@@ -446,9 +397,6 @@ const handleDelete = (index) => {
         </button>
         <button className={activeTab === "Booking" ? "active" : ""} onClick={() => setActiveTab("Booking")}>
           <FaClipboardList className="icon" /> Booking
-        </button>
-        <button className={activeTab === "maintenance" ? "active" : ""} onClick={() => setActiveTab("maintenance")}>
-          <FaCogs className="icon" /> Maintenance
         </button>
         <button className={activeTab === "reports" ? "active" : ""} onClick={() => { 
           setActiveTab("reports");
@@ -812,92 +760,9 @@ const handleDelete = (index) => {
   </div>
 )}
 
-
-
 {activeTab === "Booking" && <BookingForm />}
 
-{activeTab === "maintenance" && (
-        
-      <>       
-        {/* ✅ أيقونة الجرس للإشعارات */}
-        <div className="notification-icon" onClick={toggleMaintenanceNotifications}>
-        <FaBell size={24} />
-        {maintenanceNotifications.length > 0 && <span className="badge">{maintenanceNotifications.length}</span>}
-      </div>
-
-      {/* ✅ صندوق الإشعارات المنسدل */}
-      {isMaintenanceOpen && <NotificationBox maintenanceNotifications={maintenanceNotifications} showNotification={false} />}
-
-
-          <div className="table-container active">
-
-             <div className="responsive-table">
-            <h2>Maintenance Logs</h2>
-            <table border="1" className="styled-table">
-              <thead>
-                <tr>
-                  <th>Maintenance ID</th>
-                  <th>Resource</th>
-                  <th>Status</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {maintenanceRequests.map(req => (
-                  <tr key={req.id}>
-                    <td>{req.id}</td>
-                    <td>{req.resource}</td>
-                    <td className={req.status === "Fixed" ? "fixed-status" : "out-order-status"}>
-                      {req.status === "Fixed" ? "✔ Repairman" : "❌ Not fixed"}
-                    </td>
-                    <td>
-                      {/* <button className="repair-btn" onClick={() => requestRepair(req.id)}>🔧 Repair request</button> */}
-                      <button className="toggle-btn" onClick={() => toggleMaintenanceStatus(req.id)}>🔄 Change status</button>
-                      <button className="delete-btn" onClick={() => deleteMaintenanceRequest(req.id)}>🗑️ Delete</button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            </div>
-          </div>
-         
-          </>
-        
-        )} 
-
-        {/* {activeTab === "reports" && (
-          <div className="reports-container active">
-            <h2>Reports</h2>
-            <button className="report-btn" onClick={() => setReportType("usage")}>
-              Create Report Usage
-            </button>
-            <button className="report-btn" onClick={() => setReportType("Booking")}>
-              Create Report Booking
-            </button>
-
-            {reportType && (
-              <div className="report-writing">
-                <h3>{reportType === "usage" ? "Usage Report"
-                 : "Booking Report"}</h3>
-                <textarea id="reportText" placeholder="Write your report here..." />
-                <button className="save-report-btn" onClick={() => {
-                  let reportContent = document.getElementById("reportText").value;
-                  if (reportContent.trim() === "") {
-                    alert("Please write the report before saving!");
-                  } else {
-                    alert("✅ Report saved successfully!");
-                  }
-                }}>
-                  💾 Save the report
-                </button>
- 
-
-              </div>
-            )}
-          </div>
-        )} */}
-        {activeTab === "reports" && (
+{activeTab === "reports" && (
   <div className="reports-container active">
     <h2>Reports</h2>
     <button className="report-btn" onClick={() => setReportType("usage")}>
@@ -1008,7 +873,6 @@ const handleDelete = (index) => {
 
   </div>
 )}
-
       </main>
       </> )}
     </div>

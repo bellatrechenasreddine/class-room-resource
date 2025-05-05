@@ -1,75 +1,48 @@
 const express = require('express');
 const router = express.Router();
 const pool = require('../db');
-const verifyToken = require('../middleware/verifyToken'); // تأكد من مسار الملف الصحيح
-// جلب كل الحجوزات
-router.get('/', async (req, res) => {
+const verifyToken = require('../middleware/verifyToken'); 
+
+// ✅ جلب الحجوزات الخاصة بالمستخدم المسجل فقط
+router.get('/', verifyToken, async (req, res) => {
   try {
-    const resources = await pool.query('SELECT * FROM resources WHERE is_active = true');
-    res.json(resources.rows); // إرجاع فقط الموارد المفعلّة
+    const userId = req.user.id;
+
+    const bookings = await pool.query(`
+      SELECT bookings.id, 
+             bookings.resource_id, 
+             bookings.start_time, 
+             bookings.end_time, 
+             bookings.booking_date, 
+             resources.name AS resource_name,  
+             resources.location AS resource_location  
+      FROM bookings 
+      JOIN resources ON bookings.resource_id = resources.id
+      WHERE bookings.user_id = $1
+    `, [userId]);
+
+    res.json(bookings.rows);
   } catch (error) {
-    console.error('Error fetching resources:', error.message);
+    console.error('Error fetching bookings:', error.message);
     res.status(500).json({ message: 'Internal server error' });
   }
 });
 
 
-// إضافة حجز جديد
-// router.post('/', verifyToken, async (req, res) => {
-//   console.log('Received booking data:', req.body); // ✅ أضف هذا
-//   const { resource_id, start_time, end_time, booking_date } = req.body;
-//   const user_id = req.user.id; // استخراج id من التوكن
-
-//   // التحقق من وجود user_id في الطلب
-//   if (!user_id) {
-//     return res.status(400).json({ message: 'User ID is missing in the request.' });
-//   }
-
-//   // التحقق من وجود كل الحقول المطلوبة
-//   if (!resource_id || !start_time || !end_time || !booking_date) {
-//     return res.status(400).json({ message: 'Please provide all required fields' });
-//   }
-
-//   try {
-//     // تحقق من حالة المورد قبل السماح بالحجز
-//     const resourceCheck = await pool.query(
-//       'SELECT is_active FROM resources WHERE id = $1',
-//       [resource_id]
-//     );
-
-//     if (resourceCheck.rows.length === 0 || !resourceCheck.rows[0].is_active) {
-//       return res.status(400).json({ message: 'Resource is not available for booking' });
-//     }
-
-//     const inserted = await pool.query(
-//       `INSERT INTO bookings (resource_id, user_id, start_time, end_time, booking_date)
-//        VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-//       [resource_id, user_id, start_time, end_time, booking_date]
-//     );
-//     res.status(201).json(inserted.rows[0]);
-//   } catch (err) {
-//     console.error('Error creating booking:', err);
-//     res.status(500).json({ message: 'Internal server error' });
-//   }
-// });
-
+// ✅ إضافة حجز جديد
 router.post('/', verifyToken, async (req, res) => {
-  console.log('Received booking data:', req.body); // ✅ أضف هذا لتتبع البيانات القادمة
   const { resource_id, start_time, end_time, booking_date } = req.body;
-  const user_id = req.user.id; // استخراج id من التوكن
+  const user_id = req.user.id;
 
-  // التحقق من وجود user_id في الطلب
   if (!user_id) {
     return res.status(400).json({ message: 'User ID is missing in the request.' });
   }
 
-  // التحقق من وجود كل الحقول المطلوبة
   if (!resource_id || !start_time || !end_time || !booking_date) {
     return res.status(400).json({ message: 'Please provide all required fields' });
   }
 
   try {
-    // تحقق من حالة المورد قبل السماح بالحجز
     const resourceCheck = await pool.query(
       'SELECT is_active FROM resources WHERE id = $1',
       [resource_id]
@@ -79,7 +52,6 @@ router.post('/', verifyToken, async (req, res) => {
       return res.status(400).json({ message: 'Resource is not available for booking' });
     }
 
-    // التحقق من التداخل مع الحجوزات الموجودة
     const conflictQuery = `
       SELECT start_time, end_time FROM bookings 
       WHERE resource_id = $1 
@@ -96,15 +68,12 @@ router.post('/', verifyToken, async (req, res) => {
     ]);
 
     if (conflictResult.rows.length > 0) {
-      const conflictingBooking = conflictResult.rows[0];
-    
+      const c = conflictResult.rows[0];
       return res.status(409).json({
-        message: `⚠️ This resource is already booked on ${booking_date} from ${conflictingBooking.start_time} to ${conflictingBooking.end_time}. Please choose another time.`,
+        message: `⚠️ This resource is already booked on ${booking_date} from ${c.start_time} to ${c.end_time}. Please choose another time.`,
       });
     }
-    
 
-    // لا يوجد تضارب، احجز الآن
     const inserted = await pool.query(
       `INSERT INTO bookings (resource_id, user_id, start_time, end_time, booking_date)
        VALUES ($1, $2, $3, $4, $5) RETURNING *`,
@@ -112,20 +81,13 @@ router.post('/', verifyToken, async (req, res) => {
     );
 
     res.status(201).json(inserted.rows[0]);
-
   } catch (err) {
     console.error('Error creating booking:', err);
     res.status(500).json({ message: 'Internal server error' });
   }
 });
 
-
-
-
-
-
-
-// حذف/إلغاء حجز
+// ✅ حذف حجز
 router.delete('/:id', async (req, res) => {
   try {
     const result = await pool.query('DELETE FROM bookings WHERE id = $1 RETURNING *', [req.params.id]);
@@ -137,21 +99,58 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-// (اختياري) تعديل حجز — مثل تغيير التوقيت أو الحالة
+// ✅ تعديل حجز مع التحقق من التداخل
 router.put('/:id', async (req, res) => {
-  const { start_time, end_time } = req.body;
+  const { id } = req.params;
+  const { start_time, end_time, booking_date, resource_id } = req.body;
+
+  if (!start_time || !end_time || !booking_date || !resource_id) {
+    return res.status(400).json({ message: 'Please provide all required fields.' });
+  }
+
   try {
-    const updated = await pool.query(
+    const conflictQuery = `
+      SELECT * FROM bookings
+      WHERE resource_id = $1
+        AND booking_date = $2
+        AND id <> $5
+        AND NOT (
+          end_time <= $3 OR start_time >= $4
+        )
+    `;
+    const conflictResult = await pool.query(conflictQuery, [
+      resource_id,
+      booking_date,
+      start_time,
+      end_time,
+      id
+    ]);
+
+    if (conflictResult.rows.length > 0) {
+      const c = conflictResult.rows[0];
+      return res.status(409).json({
+        message: `⚠️ Time conflict: This resource is already booked on ${booking_date} from ${c.start_time} to ${c.end_time}.`
+      });
+    }
+
+    const updatedBooking = await pool.query(
       `UPDATE bookings
-      SET start_time = COALESCE($1, start_time),
-          end_time   = COALESCE($2, end_time)
-       WHERE id = $3 RETURNING *`,
-      [start_time, end_time, req.params.id]
+      SET start_time = $1,
+          end_time = $2,
+          booking_date = $3,
+          resource_id = $4
+      WHERE id = $5
+       RETURNING *`,
+      [start_time, end_time, booking_date, resource_id, id]
     );
-    if (updated.rowCount === 0) return res.status(404).json({ message: 'Booking not found' });
-    res.json(updated.rows[0]);
+
+    if (updatedBooking.rowCount === 0) {
+      return res.status(404).json({ message: 'Booking not found.' });
+    }
+
+    res.json(updatedBooking.rows[0]);
   } catch (err) {
-    console.error('Error updating Booking:', err);
+    console.error('Error updating booking:', err);
     res.status(500).json({ message: 'Internal server error' });
   }
 });

@@ -1,36 +1,48 @@
 .booking-content {
-    text-align: center;
-    width: 90%;
-    max-width: 600px;
-    margin: auto;
-  }
-  
-  .booking-history {
-    background: #fff;
-    padding: 15px;
-    border-radius: 8px;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-    margin-bottom: 20px;
-  }
-  
-  .booking-history table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
-  }
-  
-  .booking-history th, .booking-history td {
-    border: 1px solid #ddd;
-    padding: 8px;
-  }
-  
-  .booking-history th {
-    background: #007bff;
-    color: white;
-  }
-  
-  .booking-history tr:hover {
-    background: #f1f1f1;
-  }
-  
- 
+  padding: 20px;
+}
+
+.booking-history {
+  margin-top: 20px;
+}
+
+.booking-history table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.booking-history th,
+.booking-history td {
+  padding: 12px;
+  border: 1px solid #ccc;
+  text-align: left;
+}
+
+.booking-history th {
+  background-color: #0a1635;
+}
+
+button {
+  padding: 6px 12px;
+  background-color: red;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: darkred;
+}
+.message-box {
+  margin: 10px auto;
+  padding: 10px;
+  width: 90%;
+  max-width: 800px;
+  border-radius: 8px;
+  background-color: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeeba;
+  font-weight: bold;
+  text-align: center;
+  box-shadow: 0 0 5px rgba(0,0,0,0.1);
+}
