@@ -551,7 +551,7 @@ const BookingForm = () => {
                     alt={resource.name}
                     style={{ width: '100px', height: '100px', cursor: 'pointer' }}
                   />
-                  <p>{resource.name}</p>
+                  <p>{resource.name}  {resource.location}</p>
                 </div>
               ))}
             </div>

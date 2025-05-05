@@ -4,21 +4,27 @@ const bcrypt = require('bcrypt');
 const pool = require('../db'); // الاتصال بقاعدة البيانات
 
 // ✅ جلب جميع المستخدمين
-router.get('/', async (req, res) => { // استخدم '/' فقط هنا
+router.get('/', async (req, res) => {
   try {
-    const users = await pool.query('SELECT * FROM users');
-    
-    // التأكد من وجود المستخدمين في قاعدة البيانات
-    if (users.rows.length === 0) {
-      return res.status(404).json({ message: 'No users found' });
-    }
-
-    res.json(users.rows);
-  } catch (error) {
-    console.error('Error fetching users:', error.message);
-    res.status(500).json({ message: 'Internal server error' });
+    const result = await pool.query(`
+      SELECT * FROM users
+      ORDER BY 
+        CASE role
+          WHEN 'admin' THEN 1
+          WHEN 'teacher' THEN 2
+          WHEN 'student' THEN 3
+          WHEN 'maintenance' THEN 4
+          ELSE 5
+        END,
+        name
+    `);
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Error fetching users:', err);
+    res.status(500).json({ message: 'Server error' });
   }
 });
+
 
 // ✅ إضافة مستخدم جديد
 router.post('/', async (req, res) => {

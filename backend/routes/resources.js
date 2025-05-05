@@ -7,11 +7,34 @@ const pool = require('../db');  // الاتصال بقاعدة البيانات
 // جلب جميع الموارد (بدون تجميع)
 router.get('/', async (req, res) => {
   try {
-    const resources = await pool.query('SELECT * FROM resources');
-    res.json(resources.rows); // مصفوفة عادية
-  } catch (error) {
-    console.error('Error fetching resources:', error.message);
-    res.status(500).json({ message: 'Internal server error' });
+    const result = await pool.query(`
+      SELECT *,
+        CAST(regexp_replace(name, '\\D', '', 'g') AS INTEGER) AS name_number
+      FROM resources
+      ORDER BY
+        CASE type
+          WHEN 'Meeting Room' THEN 1
+          WHEN 'Classroom' THEN 2
+          WHEN 'Lab' THEN 3
+          WHEN 'Projector' THEN 4
+          WHEN 'Computer' THEN 5
+          WHEN 'Camera' THEN 6
+          WHEN 'Microphone' THEN 7
+          WHEN 'Speaker' THEN 8
+          ELSE 9
+        END,
+        name_number,
+        CASE location
+          WHEN 'College A' THEN 1
+          WHEN 'College B' THEN 2
+          WHEN 'College C' THEN 3
+          ELSE 4
+        END
+    `);
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Error fetching resources:', err);
+    res.status(500).json({ message: 'Server error' });
   }
 });
 
