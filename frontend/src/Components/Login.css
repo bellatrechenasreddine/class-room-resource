@@ -1,157 +1,163 @@
 /* 🔹 تصميم الصفحة الرئيسية */
+* {
+  box-sizing: border-box;
+}
+
 .login-container {
-    display: flex;
-    height: 100vh;
-    font-family: Arial, sans-serif;
-  }
-  
-  /* 🔹 القسم الأيسر (نموذج تسجيل الدخول) */
-  .login-left {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: 50px;
-    background: #fff;
-  }
-  
-  .login-title {
-    font-size: 28px;
-    font-weight: bold;
-    color: #2c3e50;
-  }
-  
-  .login-subtitle {
-    color: #555;
-    margin-bottom: 20px;
-  }
-  
-  .input-container {
-    display: flex;
-    flex-direction: column;
-    margin-bottom: 15px;
-  }
-  
-  .input-container label {
-    font-size: 14px;
-    color: #333;
-    margin-bottom: 5px;
-  }
-  
-  .input-container input {
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    font-size: 16px;
-  }
-  
-  .login-options {
-    display: flex;
-    justify-content: space-between;
-    font-size: 14px;
-    margin-bottom: 15px;
-  }
-  
-  .reset-password {
-    color: #3498db;
-    text-decoration: none;
-  }
-  
-  .login-button {
-    background: #2c3e50 !important;
-    color: white;
-    padding: 12px;
-    border: none;
-    border-radius: 5px;
-    font-size: 18px;
-    cursor: pointer;
-    width: 100%;
-    margin-bottom: 10px;
-  }
-  
-  .register-link {
-    text-align: center;
-    font-size: 14px;
-    margin-top: 10px;
-  }
-  
-  .register-link a {
-    color: #3498db;
-    text-decoration: none;
-    font-weight: bold;
-  }
-  
-  /* 🔹 القسم الأيمن (الصورة والخلفية) */
-  .login-right {
-    flex: 1;
-    background-image: url('../Assets/dave-michael-iedYX4wsxwI-unsplash.jpg');
-  background-size: 100% 100%; /* أو استخدم cover/ 50% */
+  display: flex;
+  height: 100vh;
+  font-family: Arial, sans-serif;
+}
+
+/* 🔹 القسم الأيسر (نموذج تسجيل الدخول) */
+.login-left {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 50px;
+  background: #fff;
+}
+
+.login-title {
+  font-size: 40px; 
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+
+.login-subtitle {
+  color: #555;
+  margin-bottom: 20px;
+}
+
+.input-container {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 15px;
+}
+
+.input-container input {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
+}
+
+.login-options {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  margin-bottom: 15px;
+}
+
+.reset-password {
+  color: #007bff;
+  text-decoration: underline;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.reset-password:hover {
+  color: #0056b3;
+}
+
+.login-button {
+  background: #2c3e50 !important;
+  color: white;
+  padding: 12px;
+  border: none;
+  border-radius: 5px;
+  font-size: 18px;
+  cursor: pointer;
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.register-link {
+  text-align: center;
+  font-size: 14px;
+  margin-top: 10px;
+}
+
+.register-link a {
+  color: #3498db;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.signup-text {
+  display: none;
+}
+
+/* 🔹 القسم الأيمن (الصورة والخلفية) */
+.login-right {
+  flex: 1;
+  min-width: 0;
+  background-image: url('../Assets/bookings.jpg');
+  background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  
-    position: relative;
-  }
-  
-  .overlay {
-    position: absolute;
-    bottom: 50px;
-    left: 50px;
-    color: white;
-    font-size: 20px;
-  }
-  
-  .highlight-text {
-    font-size: 24px;
-    font-weight: bold;
-  }
-  
-  .highlight {
-    color: #f1c40f;
-  }
-  
-  .indicator {
-    display: flex;
-    margin-top: 10px;
-  }
-  
-  .dot {
-    width: 12px;
-    height: 12px;
-    margin-right: 5px;
-    border-radius: 50%;
-    background: white;
-    opacity: 0.5;
-  }
-  
-  .dot.active {
-    opacity: 1;
-    background: #f1c40f;
-  }
-  
-  /* ✅ تحسين التناسق على الأجهزة الصغيرة */
-  @media (max-width: 768px) {
-    .login-container {
-      flex-direction: column;
-    }
-  
-    .login-right {
-      display: none;
-    }
-  }
-  
+  position: relative;
+}
 
-  .reset-password {
-    color: #007bff; /* لون أزرق مثل الروابط */
-    text-decoration: underline; /* خط سفلي ليبدو كرابط */
-    cursor: pointer; /* يجعل المؤشر يتحول إلى يد عند التحويم */
-    font-weight: bold; /* لجعلها بارزة أكثر */
+.overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 1.5rem;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
+  color: white;
+  text-align: center;
+}
+
+.promo-text {
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: white;
+  text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.7);
+  margin-bottom: 1rem;
+}
+
+.highlight {
+  color: #ffd700;
+}
+
+.indicator {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.dot {
+  width: 12px;
+  height: 12px;
+  margin-right: 5px;
+  border-radius: 50%;
+  background: white;
+  opacity: 0.5;
+}
+
+.dot.active {
+  opacity: 1;
+  background: #f1c40f;
+}
+
+/* ✅ تحسين التناسق على الأجهزة الصغيرة */
+@media (max-width: 768px) {
+  .login-container {
+    flex-direction: column;
   }
-  
-  /* تأثير عند التحويم */
-  .reset-password:hover {
-    color: #0056b3; /* لون أزرق غامق عند التحويم */
-  }
-  .signup-text {
+
+  .login-right {
     display: none;
   }
-    
+}
+body, html {
+  margin: 0;
+  padding: 0;
+  overflow: hidden; /* يمنع ظهور شريط التمرير */
+  height: 100%;
+}

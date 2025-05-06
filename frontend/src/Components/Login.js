@@ -93,14 +93,14 @@ export default function Login() {
         </div>
         <button onClick={handleLogin} className="login-button">Login</button>
         <p className="signup-text">
-          Don't have an account yet? <a href="#">Join KRIS today.</a>
-        </p>
+          Don't have an account yet? <a href="#">Join KRIS today</a>
+        </p> 
       </div>
       <div className="login-right">
-        <div className="overlay">
-          <p className="promo-text">
-            Manage all <span className="highlight">HR Operations</span> from the comfort of your home.
-          </p>
+          <div className="overlay">
+            <p className="promo-text">
+              Manage all <span className="highlight">Classroom Resources</span><br /> with ease and efficiency.
+            </p>
           <div className="carousel-indicators">
             <span className="active"></span>
             <span></span>
