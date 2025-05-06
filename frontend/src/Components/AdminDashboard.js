@@ -7,7 +7,8 @@ import { FaUsers } from "react-icons/fa";
 import React, { useState ,useEffect } from "react";
 import "./Dashboard.css";
 import { FaChartBar, FaClipboardList, FaCogs, FaSignOutAlt, FaDatabase, FaUserShield,FaBars } from "react-icons/fa";
-//  داىره import { Bar, Pie } from "react-chartjs-2";
+import { FaHistory } from "react-icons/fa";  // إضافة هذا السطر
+import HistoryBooking from "./HistoryBooking"
 import { Bar } from "react-chartjs-2"
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, ArcElement, Tooltip, Legend } from "chart.js";
 import NotificationBox from "../Components/NotificationBox"; // استيراد مكون الإشعارات
@@ -256,7 +257,7 @@ const navigate = useNavigate();
   
   
 
-// Bookings maintananvce 
+// Bookings 
 // 1. الحالة
 const [Bookings, setBookings] = useState([]);
 const [newBooking, setNewBooking] = useState({ id: '', resource_id: '', user_id: '', start_time: '', end_time: '', status: '' });
@@ -303,6 +304,29 @@ const toggleActive = async (id, newStatus) => {
   }
 };
 
+const [error, setError] = useState(null);
+
+useEffect(() => {
+  // تأكد من وجود التوكن في localStorage
+  const token = localStorage.getItem('token');
+  console.log("📦 Token being sent:", token); // تحقق من أن التوكن موجود فعلاً
+  if (token) {
+    axios.get('http://localhost:5000/api/bookings', {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+      .then(response => {
+        setBookings(response.data); // تحديث البيانات المعروضة
+      })
+      .catch(error => {
+        console.error('❌ Error fetching bookings:', error); // اطبع التفاصيل
+        setError(error.message); // التعامل مع الأخطاء
+      });
+  } else {
+    setError('Token not found'); // في حال لم يكن التوكن موجودًا
+  }
+}, []); // يقوم بالتنفيذ مرة واحدة عند تحميل الصفحة
 
 // Notification 
 const [maintenanceNotifications, setMaintenanceNotifications] = useState([
@@ -398,6 +422,10 @@ const handleDelete = (index) => {
         <button className={activeTab === "Booking" ? "active" : ""} onClick={() => setActiveTab("Booking")}>
           <FaClipboardList className="icon" /> Booking
         </button>
+        <button className={activeTab === "history" ? "active" : ""} onClick={() => handleTabClick("history")}>
+          <FaHistory /> Booking History
+        </button>
+
         <button className={activeTab === "reports" ? "active" : ""} onClick={() => { 
           setActiveTab("reports");
           setReportType("");
@@ -761,7 +789,7 @@ const handleDelete = (index) => {
 )}
 
 {activeTab === "Booking" && <BookingForm />}
-
+{activeTab === "history" && <HistoryBooking />}
 {activeTab === "reports" && (
   <div className="reports-container active">
     <h2>Reports</h2>

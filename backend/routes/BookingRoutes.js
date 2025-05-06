@@ -7,26 +7,50 @@ const verifyToken = require('../middleware/verifyToken');
 router.get('/', verifyToken, async (req, res) => {
   try {
     const userId = req.user.id;
+    const role = req.user.role; // تأكد أن هذا الحقل يأتي مع التوكن
 
-    const bookings = await pool.query(`
-      SELECT bookings.id, 
-             bookings.resource_id, 
-             bookings.start_time, 
-             bookings.end_time, 
-             bookings.booking_date, 
-             resources.name AS resource_name,  
-             resources.location AS resource_location  
-      FROM bookings 
-      JOIN resources ON bookings.resource_id = resources.id
-      WHERE bookings.user_id = $1
-    `, [userId]);
+    let query;
+    let params;
 
+    if (role === 'admin') {
+      // إذا كان أدمن، اجلب كل الحجوزات
+      query = `
+        SELECT bookings.id, 
+              bookings.resource_id, 
+              bookings.start_time, 
+              bookings.end_time, 
+              bookings.booking_date, 
+              resources.name AS resource_name,  
+              resources.location AS resource_location  
+        FROM bookings 
+        JOIN resources ON bookings.resource_id = resources.id
+      `;
+      params = [];
+    } else {
+      // غير ذلك (طالب أو أستاذ)، اجلب فقط حجوزات المستخدم الحالي
+      query = `
+        SELECT bookings.id, 
+            bookings.resource_id, 
+            bookings.start_time, 
+            bookings.end_time, 
+            bookings.booking_date, 
+            resources.name AS resource_name,  
+            resources.location AS resource_location  
+        FROM bookings 
+        JOIN resources ON bookings.resource_id = resources.id
+        WHERE bookings.user_id = $1
+      `;
+      params = [userId];
+    }
+
+    const bookings = await pool.query(query, params);
     res.json(bookings.rows);
   } catch (error) {
     console.error('Error fetching bookings:', error.message);
     res.status(500).json({ message: 'Internal server error' });
   }
 });
+
 
 
 // ✅ إضافة حجز جديد

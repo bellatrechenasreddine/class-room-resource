@@ -13,24 +13,6 @@ const TeacherDashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null); // ✅ تعريف الحالة
 
-  // // تعديل روفرم الحجز 
-  // const [selectedResource, setSelectedResource] = useState("");
-  // const [showForm, setShowForm] = useState(false);
-  // // قائمة الموارد لكل فئة
-  // const resourceOptions = {
-  //   "PC": ["PC1", "PC2", "PC3"],
-  //   "Datashow": ["Datashow1", "Datashow2"],
-  //   "Whiteboard": ["Whiteboard1", "Whiteboard2"]
-  // };
-
-  // // عند الضغط على الصورة، نحدد الفئة ونظهر الفورم
-  // const handleResourceClick = (category) => {
-  //   setSelectedCategory(category);
-  //   setSelectedResource(""); // تصفير الاختيار السابق
-  //   setShowForm(true);
-  // };
-
-
   const navigate = useNavigate(); // 🔄 التنقل بين الصفحات
 
 
@@ -43,16 +25,6 @@ const TeacherDashboard = () => {
   const handleLogout = () => {
     navigate("/login"); // 🔄 إعادة التوجيه إلى صفحة تسجيل الدخول
   };
-
-  // over view 
-  // بيانات الحجوزات كمثال
-const bookingHistory = [
-  { id: 1, resource: "Projector", date: "2025-04-01" },
-  { id: 2, resource: "Laptop", date: "2025-03-28" },
-  { id: 3, resource: "Projector", date: "2025-03-25" },
-  { id: 4, resource: "Tablet", date: "2025-03-20" },
-  { id: 5, resource: "Projector", date: "2025-03-15" },
-];
 
 // حساب عدد الحجوزات
 const totalBookings = bookingHistory.length;
@@ -80,7 +52,7 @@ const [maintenanceNotifications, setMaintenanceNotifications] = useState([]);
   return (
     <div className="teacher-dashboard">
        {/* ✅ أيقونة الجرس لفتح صندوق الإشعارات */}
-       <div className="notification-icon" onClick={() => setIsOpen(!isOpen)}>
+      <div className="notification-icon" onClick={() => setIsOpen(!isOpen)}>
         <FaBell size={24} />
         {notifications.length > 0 && <span className="badge">{notifications.length}</span>}
       </div>
@@ -107,7 +79,7 @@ const [maintenanceNotifications, setMaintenanceNotifications] = useState([]);
         <button className={activeTab === "report" ? "active" : ""} onClick={() => handleTabClick("report")}>
           <FaExclamationTriangle /> Report a problem
         </button>
-       <button className="logout" onClick={handleLogout}>
+      <button className="logout" onClick={handleLogout}>
           <FaSignOutAlt /> Logout
         </button>
       </aside>
@@ -130,37 +102,6 @@ const [maintenanceNotifications, setMaintenanceNotifications] = useState([]);
     </div>
   </div>
 )}
-
-        {/* {activeTab === "booking" && (
-  <div className="booking-section">
-    <h2>Choose a Resource</h2>
-    <div className="resource-options">
-      <img src="/images/pc.png" alt="PC" onClick={() => setSelectedCategory("PC")} />
-      <img src="/images/datashow.png" alt="Datashow" onClick={() => setSelectedCategory("Datashow")} />
-      <img src="/images/board.png" alt="Board" onClick={() => setSelectedCategory("Board")} />
-    </div>
-
-    {selectedCategory && (
-      <form className="booking-form">
-        <label>Resource Category:</label>
-        <select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}>
-          <option value="PC">PC</option>
-          <option value="Datashow">Datashow</option>
-          <option value="Board">Board</option>
-        </select>
-
-        <label>Resource Name:</label>
-        <select>
-          {selectedCategory === "PC" && ["PC1", "PC2", "PC3"].map((item) => <option key={item}>{item}</option>)}
-          {selectedCategory === "Datashow" && ["Datashow1", "Datashow2"].map((item) => <option key={item}>{item}</option>)}
-          {selectedCategory === "Board" && ["Board1", "Board2"].map((item) => <option key={item}>{item}</option>)}
-        </select>
-
-        <button type="submit">Book Now</button>
-      </form>
-    )}
-  </div>
-)} */}
 
 {activeTab === "booking" && <BookingForm />}
 
