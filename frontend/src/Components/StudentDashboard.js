@@ -80,7 +80,7 @@ const [isOpen, setIsOpen] = useState(false); // ✅ حالة التحكم في �
           <FaCalendarCheck /> Booking
         </button>
         <button className={activeTab === "history" ? "active" : ""} onClick={() => handleTabClick("history")}>
-          <FaHistory /> Booking history
+          <FaHistory /> Bookings history
         </button>
         <button className={activeTab === "report" ? "active" : ""} onClick={() => handleTabClick("report")}>
           <FaExclamationTriangle /> Report a problem

@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import React, { useState } from "react";
+import React, { useState, useEffect } from 'react';
 import { FaBars, FaCalendarCheck, FaHistory, FaExclamationTriangle, FaSignOutAlt, FaChalkboardTeacher } from "react-icons/fa";
 import "./TeacherDashboard.css";
 import BookingForm from "./BookingForm";
@@ -7,11 +7,27 @@ import HistoryBooking from "./HistoryBooking"
 import ReportForm from "./ReportForm"
 import NotificationBox from "../Components/NotificationBox"; // استيراد مكون الإشعارات
 import { FaBell } from "react-icons/fa"; // ✅ أيقونة الجرس
+import axios from 'axios';
+
 
 const TeacherDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null); // ✅ تعريف الحالة
+  const [bookingHistory, setBookingHistory] = useState([]);
+  useEffect(() => {
+    const fetchHistory = async () => {
+      try {
+        const response = await axios.get('/api/bookings/history');
+        setBookingHistory(response.data);
+      } catch (error) {
+        console.error('Failed to fetch booking history:', error);
+      }
+    };
+  
+    fetchHistory();
+  }, []);
+  
 
   const navigate = useNavigate(); // 🔄 التنقل بين الصفحات
 
@@ -35,9 +51,13 @@ const resourceCount = bookingHistory.reduce((acc, booking) => {
   return acc;
 }, {});
 
-const mostUsedResource = Object.keys(resourceCount).reduce((a, b) =>
-  resourceCount[a] > resourceCount[b] ? a : b
-);
+const mostUsedResource =
+  Object.keys(resourceCount).length > 0
+    ? Object.keys(resourceCount).reduce((a, b) =>
+        resourceCount[a] > resourceCount[b] ? a : b
+      )
+    : "No data";
+
 // Notification 
 const [notifications, setNotifications] = useState([
   "📅 لديك حجز لموارد تعليمية غدًا!",
@@ -74,7 +94,7 @@ const [maintenanceNotifications, setMaintenanceNotifications] = useState([]);
           <FaCalendarCheck /> Booking
         </button>
         <button className={activeTab === "history" ? "active" : ""} onClick={() => handleTabClick("history")}>
-          <FaHistory /> Booking history
+          <FaHistory /> Bookings history
         </button>
         <button className={activeTab === "report" ? "active" : ""} onClick={() => handleTabClick("report")}>
           <FaExclamationTriangle /> Report a problem
@@ -110,8 +130,6 @@ const [maintenanceNotifications, setMaintenanceNotifications] = useState([]);
 {activeTab === "report" && (
   <ReportForm setMaintenanceNotifications={setMaintenanceNotifications} />
 )}
-
-
       </main>
     </div>
   );

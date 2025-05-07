@@ -1,7 +1,6 @@
 
 // logout 
 import BookingForm from "./BookingForm"
-
 import { useNavigate } from "react-router-dom";
 import { FaUsers } from "react-icons/fa";
 import React, { useState ,useEffect } from "react";
@@ -22,7 +21,20 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, Title, ArcElement, Tool
 
 
 const AdminDashboard = () => {
-// usesrs
+ //dashboard
+ const [userName, setUserName] = useState("");
+ 
+ useEffect(() => {
+   const storedName = localStorage.getItem("userName");
+   if (storedName) {
+     setUserName(storedName);
+   }
+   // تحقق من البيانات المخزنة في localStorage
+  console.log("Stored name in localStorage:", localStorage.getItem("userName"));
+  console.log("Decoded token:", JSON.parse(atob(localStorage.getItem("token").split('.')[1])));
+ }, []);
+  
+// users
 const [users, setUsers] = useState([]);
 const [newUser, setNewUser] = useState({ name: "", email: "", role: "" });
 const [showAddUser, setShowAddUser] = useState(false);
@@ -255,31 +267,50 @@ const navigate = useNavigate();
     }
   };
   
-  
-
-// Bookings 
-// 1. الحالة
-const [Bookings, setBookings] = useState([]);
-const [newBooking, setNewBooking] = useState({ id: '', resource_id: '', user_id: '', start_time: '', end_time: '', status: '' });
+//bookings
+const [bookings, setBookings] = useState([]);  // تم تغيير Bookings إلى bookings
+const [bookingHistory, setBookingHistory] = useState([]);
+const [newBooking, setNewBooking] = useState({
+  id: '', 
+  resource_id: '', 
+  user_id: '', 
+  start_time: '', 
+  end_time: '', 
+  status: ''
+});
 const [showAddRes, setShowAddRes] = useState(false);
 const [searchResQuery, setSearchResQuery] = useState('');
+const [error, setError] = useState(null);
 
-// 2. جلب الحجوزات
+// 2. جلب الحجوزات باستخدام التوكن
 useEffect(() => {
-  axios.get('http://localhost:5000/api/bookings')
-    .then(res => setBookings(res.data))
-    .catch(err => console.error('Failed to fetch bookings', err));
-}, []);
+  const token = localStorage.getItem('token'); // التحقق من وجود التوكن
+
+  if (token) {
+    axios.get('http://localhost:5000/api/bookings', {
+      headers: {
+        Authorization: `Bearer ${token}`, // إرسال التوكن في الهيدر
+      },
+    })
+      .then(res => setBookings(res.data)) // تحديث بيانات الحجوزات
+      .catch(err => {
+        console.error('❌ Error fetching bookings:', err);
+        setError('Error fetching bookings');  // التعامل مع الخطأ
+      });
+  } else {
+    setError('Token not found');  // في حال لم يكن التوكن موجودًا
+  }
+}, []);  // يقوم بالتنفيذ مرة واحدة عند تحميل الصفحة
 
 // 3. إضافة حجز جديد
 const handleAddBooking = async () => {
   try {
-    const res = await axios.post('http://localhost:5000/api/Bookings', newBooking);
-    setBookings([...Bookings, res.data]);
-    setShowAddRes(false);
-    setNewBooking({ id: '', resource_id: '', user_id: '', start_time: '', end_time: '' });
+    const res = await axios.post('http://localhost:5000/api/bookings', newBooking);
+    setBookings([...bookings, res.data]);  // إضافة الحجز الجديد للقائمة
+    setShowAddRes(false);  // إغلاق نافذة الإضافة
+    setNewBooking({ id: '', resource_id: '', user_id: '', start_time: '', end_time: '' });  // إعادة تعيين النموذج
   } catch (err) {
-    console.error('Error adding Booking', err);
+    console.error('❌ Error adding booking:', err);
     alert('حدث خطأ أثناء إضافة الحجز');
   }
 };
@@ -288,45 +319,14 @@ const handleAddBooking = async () => {
 const handleDeleteBooking = async (id) => {
   if (!window.confirm('هل تريد إلغاء هذا الحجز؟')) return;
   try {
-    await axios.delete(`http://localhost:5000/api/Bookings/${id}`);
-    setBookings(Bookings.filter(r => r.id !== id));
+    await axios.delete(`http://localhost:5000/api/bookings/${id}`);
+    setBookings(bookings.filter(r => r.id !== id));  // إزالة الحجز المحذوف من القائمة
   } catch (err) {
-    console.error('Error deleting Booking', err);
+    console.error('❌ Error deleting booking:', err);
     alert('حدث خطأ أثناء إلغاء الحجز');
   }
 };
-const toggleActive = async (id, newStatus) => {
-  try {
-    await axios.patch(`http://localhost:5000/api/resources/${id}/active`, { is_active: newStatus });
-    setResources(resources.map(r => r.id === id ? { ...r, is_active: newStatus } : r));
-  } catch (err) {
-    console.error("Error toggling resource", err);
-  }
-};
 
-const [error, setError] = useState(null);
-
-useEffect(() => {
-  // تأكد من وجود التوكن في localStorage
-  const token = localStorage.getItem('token');
-  console.log("📦 Token being sent:", token); // تحقق من أن التوكن موجود فعلاً
-  if (token) {
-    axios.get('http://localhost:5000/api/bookings', {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    })
-      .then(response => {
-        setBookings(response.data); // تحديث البيانات المعروضة
-      })
-      .catch(error => {
-        console.error('❌ Error fetching bookings:', error); // اطبع التفاصيل
-        setError(error.message); // التعامل مع الأخطاء
-      });
-  } else {
-    setError('Token not found'); // في حال لم يكن التوكن موجودًا
-  }
-}, []); // يقوم بالتنفيذ مرة واحدة عند تحميل الصفحة
 
 // Notification 
 const [maintenanceNotifications, setMaintenanceNotifications] = useState([
@@ -409,21 +409,21 @@ const handleDelete = (index) => {
 
       <aside className={`sidebar ${sidebarOpen ? "open" : ""}`}>
         <h2 className={`logo ${activeTab === "dashboard" ? "active" : ""}`} onClick={() => setActiveTab("dashboard")}>
-          <FaUserShield className="admin-icon" /> Admin Dashboard
+          <FaUserShield className="admin-icon" /> {userName}
         </h2>
 
         <button className={activeTab === "users" ? "active" : ""} onClick={() => setActiveTab("users")}>
         <FaUsers className="icon" /> Users
-          </button>
+        </button>
 
         <button className={activeTab === "resource" ? "active" : ""} onClick={() => setActiveTab("resource")}>
-          <FaDatabase className="icon" /> Resource
+          <FaDatabase className="icon" /> Resources
         </button>
         <button className={activeTab === "Booking" ? "active" : ""} onClick={() => setActiveTab("Booking")}>
           <FaClipboardList className="icon" /> Booking
         </button>
         <button className={activeTab === "history" ? "active" : ""} onClick={() => handleTabClick("history")}>
-          <FaHistory /> Booking History
+          <FaHistory /> Bookings History
         </button>
 
         <button className={activeTab === "reports" ? "active" : ""} onClick={() => { 
@@ -440,20 +440,19 @@ const handleDelete = (index) => {
       </aside>
 
 
-      <main className="main-content">
-        {activeTab === "dashboard" && (
-          <div className="dashboard-home active">
-            <h2>Dashboard Overview</h2>
-            <div className="charts-container">
-              <div className="chart-box">
-                <h3>Bookings Statistics</h3>
-                <Bar data={barData}  options={barOptions}/>
-              </div>
-              
-            </div>
-          </div>
-        )}
-
+<main className="main-content">
+{activeTab === "dashboard" && (
+  <div className="dashboard-home active">
+    <h2>Dashboard Overview</h2>
+    <div className="charts-container">
+      <div className="chart-box">
+        <h3>Bookings Statistics</h3>
+        <Bar data={barData}  options={barOptions}/>
+      </div>
+      
+    </div>
+  </div>
+)}
 
 {activeTab === "users" && (
   <div className="table-container active">
@@ -556,7 +555,6 @@ const handleDelete = (index) => {
       <table border="1">
         <thead>
           <tr>
-            <th>#</th>
             <th>Name</th>
             <th>Email</th>
             <th>Role</th>
@@ -566,7 +564,6 @@ const handleDelete = (index) => {
         <tbody>
           {filteredUsers.map((user, index) => (
             <tr key={user.id}>
-              <td>{index + 1}</td>
               <td>{user.name}</td>
               <td>{user.email}</td>
               <td>{user.role}</td>
@@ -745,7 +742,7 @@ const handleDelete = (index) => {
       <table border="1">
         <thead>
           <tr>
-            <th>ID</th>
+            {/* <th>ID</th> */}
             <th>Type</th>
             <th>Name</th>
             <th>Location</th>
@@ -762,7 +759,7 @@ const handleDelete = (index) => {
             )
             .map((resource, index) => (
               <tr key={index}>
-                <td>{index + 1}</td>
+                {/* <td>{index + 1}</td> */}
                 <td>{resource.type}</td>
                 <td>{resource.name}</td>
                 <td>{resource.location}</td>

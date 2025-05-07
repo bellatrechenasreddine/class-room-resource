@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./Login.css";
@@ -16,7 +16,6 @@ export default function Login() {
     }
 
     try {
-      // إرسال البيانات إلى الـ API لتسجيل الدخول
       const response = await axios.post("http://localhost:5000/api/auth/login", {
         email: email.trim(),
         password,
@@ -24,14 +23,21 @@ export default function Login() {
 
       const { token } = response.data;
 
-      // حفظ التوكن في localStorage
-      localStorage.setItem("token", token);
-
-      // استخراج بيانات التوكن لمعرفة الدور
+      // استخراج البيانات من التوكن
       const payload = JSON.parse(atob(token.split('.')[1]));
-      const userRole = payload.role;
+      console.log("Decoded payload:", payload);
 
-      // التوجيه بناءً على الدور
+      const userRole = payload.role;
+      const userName = payload.name;
+      console.log("Decoded name:", userName);
+
+      // حفظ التوكن والاسم في localStorage
+      localStorage.setItem("token", token);
+      localStorage.setItem("userName", userName);
+      // تحقق من تخزين البيانات في localStorage
+    console.log("Stored name in localStorage:", localStorage.getItem("userName"));
+    console.log("Decoded token:", JSON.parse(atob(localStorage.getItem("token").split('.')[1])));
+      // التوجيه حسب الدور
       switch (userRole) {
         case "admin":
           navigate("/admin-dashboard");
@@ -51,7 +57,7 @@ export default function Login() {
       }
 
     } catch (error) {
-      console.error(error);
+      console.error("Login failed:", error);
       setError("Invalid email or password");
     }
   };
@@ -97,10 +103,10 @@ export default function Login() {
         </p> 
       </div>
       <div className="login-right">
-          <div className="overlay">
-            <p className="promo-text">
-              Manage all <span className="highlight">Classroom Resources</span><br /> with ease and efficiency.
-            </p>
+        <div className="overlay">
+          <p className="promo-text">
+            Manage all <span className="highlight">Classroom Resources</span><br /> with ease and efficiency.
+          </p>
           <div className="carousel-indicators">
             <span className="active"></span>
             <span></span>

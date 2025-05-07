@@ -86,7 +86,6 @@ const HistoryBooking = () => {
         <table>
           <thead>
             <tr>
-              <th>ID</th>
               <th>Resource</th>
               <th>Date</th>
               <th>Time</th>
@@ -97,7 +96,6 @@ const HistoryBooking = () => {
           <tbody>
             {bookingHistory.map((booking) => (
               <tr key={booking.id}>
-                <td>{booking.id}</td>
                 <td>{getResourceDetails(booking.resource_id)}</td>
                 <td>{formatDate(booking.booking_date)}</td>
                 <td>{booking.start_time} - {booking.end_time}</td>
@@ -126,7 +124,7 @@ const HistoryBooking = () => {
             <label>Resource:</label>
             <select
               value={currentBooking.resource_id}
-              onChange={(e) => setCurrentBooking({ ...currentBooking, resource_id: e.target.value })}
+              onChange={(e) => setCurrentBooking({ ...currentBooking, resource_id: (e.target.value) })}
             >
               {resources.map(resource => (
                 <option key={resource.id} value={resource.id}>
