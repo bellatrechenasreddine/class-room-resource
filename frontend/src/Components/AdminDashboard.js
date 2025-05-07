@@ -1,26 +1,27 @@
 
 // logout 
 import BookingForm from "./BookingForm"
-import { useNavigate } from "react-router-dom";
 import { FaUsers } from "react-icons/fa";
 import React, { useState ,useEffect } from "react";
 import "./Dashboard.css";
 import { FaChartBar, FaClipboardList, FaCogs, FaSignOutAlt, FaDatabase, FaUserShield,FaBars } from "react-icons/fa";
 import { FaHistory } from "react-icons/fa";  // إضافة هذا السطر
 import HistoryBooking from "./HistoryBooking"
-import { Bar } from "react-chartjs-2"
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, ArcElement, Tooltip, Legend } from "chart.js";
 import NotificationBox from "../Components/NotificationBox"; // استيراد مكون الإشعارات
 import { FaBell } from "react-icons/fa"; // ✅ أيقونة الجرس
 import Loader from "../Components/Loader"; // استيراد اللودر
 import resourceOptions from "./resourceOptions"; // استيراد الموارد
 import axios from 'axios';
+import { Bar } from "react-chartjs-2";
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, ArcElement, Tooltip, Legend);
+import { useNavigate } from 'react-router-dom';
 
 
 
 
 const AdminDashboard = () => {
+  const navigate = useNavigate();  // ✅ الآن يمكنك استخدام navigate('/path')
  //dashboard
  const [userName, setUserName] = useState("");
  
@@ -32,7 +33,34 @@ const AdminDashboard = () => {
    // تحقق من البيانات المخزنة في localStorage
   console.log("Stored name in localStorage:", localStorage.getItem("userName"));
   console.log("Decoded token:", JSON.parse(atob(localStorage.getItem("token").split('.')[1])));
- }, []);
+}, []);
+ const [stats, setStats] = useState([]);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    axios.get("/api/bookings/stats", {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+    .then(res => setStats(res.data))
+    .catch(err => console.error(err));
+  }, []);
+
+  const barData = {
+    labels: stats.map(item => item.type),
+    datasets: [{
+      label: "Bookings",
+      data: stats.map(item => item.booking_count),
+      backgroundColor: "rgba(75, 192, 192, 0.6)",
+    }]
+  };
+  const barOptions = {
+  responsive: true,
+  plugins: {
+    legend: { position: "top" },
+    title: { display: true, text: "Bookings per Resource Type" }
+  }
+};
+
   
 // users
 const [users, setUsers] = useState([]);
@@ -134,37 +162,7 @@ const handleUpdateUser = async () => {
       setLoading(false); // ⏳ إيقاف اللودر بعد تحميل المحتوى
     }, 1500); // ⏳ محاكاة تحميل البيانات
   };
-// logout 
-const navigate = useNavigate();
 
-  const barData = {
-    labels: ["Projector", "Whiteboard", "Laptop", "Tablet"],
-    datasets: [
-      {
-        label: "Bookings",
-        data: [10, 15, 8, 12],
-        backgroundColor: "rgba(54, 162, 235, 0.5)",
-      },
-    ],
-  };
-  const barOptions = {
-    responsive: true,
-    maintainAspectRatio: false, // يجعل المخطط يستجيب لحجم الحاوية
-    scales: {
-      x: {
-        ticks: { font: { size: 14 } }, // حجم النص على المحور X
-        grid: { display: false }, // إخفاء الخطوط الخلفية للمحور X
-        barThickness: 40, // التحكم في عرض العمود
-        maxBarThickness: 70, // الحد الأقصى لعرض العمود
-      },
-      y: {
-        beginAtZero: true,
-        ticks: { font: { size: 14 } },
-      },
-    },
-  };
-  
- 
   // resource 
   const [resources, setResources] = useState([]);
   const [newResource, setNewResource] = useState({
@@ -447,9 +445,12 @@ const handleDelete = (index) => {
     <div className="charts-container">
       <div className="chart-box">
         <h3>Bookings Statistics</h3>
-        <Bar data={barData}  options={barOptions}/>
+        {barData.labels.length > 0 ? (
+          <Bar data={barData} options={barOptions} />
+        ) : (
+          <p>Loading chart...</p>
+        )}
       </div>
-      
     </div>
   </div>
 )}
@@ -575,6 +576,7 @@ const handleDelete = (index) => {
           ))}
         </tbody>
       </table>
+      
     </div>
   </div>
 )}
@@ -787,6 +789,7 @@ const handleDelete = (index) => {
 
 {activeTab === "Booking" && <BookingForm />}
 {activeTab === "history" && <HistoryBooking />}
+
 {activeTab === "reports" && (
   <div className="reports-container active">
     <h2>Reports</h2>

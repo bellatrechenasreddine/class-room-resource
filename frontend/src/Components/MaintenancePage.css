@@ -7,6 +7,11 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     font-family: "Segoe UI", sans-serif;
   }
+  .main-content {
+    overflow-y: auto; /* السماح بالتمرير العمودي */
+    max-height: 100vh; /* أو height: 100vh; حسب تصميمك */
+    padding: 1rem;     /* اختياري لتحسين العرض */
+  }
   
   h2 {
     text-align: center;

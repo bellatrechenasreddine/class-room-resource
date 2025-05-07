@@ -369,6 +369,11 @@
   border: none;
   cursor: pointer;
 }
+.main-content {
+  overflow-y: auto; /* السماح بالتمرير العمودي */
+  max-height: 100vh; /* أو height: 100vh; حسب تصميمك */
+  padding: 1rem;     /* اختياري لتحسين العرض */
+}
 
 /* المحتوى الرئيسي */
 .main-content {

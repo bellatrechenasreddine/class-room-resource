@@ -19,6 +19,7 @@ const auth = require('./routes/auth');
 const userRoutes = require('./routes/userRoutes');
 const resourcesRouter = require('./routes/resources');
 const BookingRoutes = require('./routes/BookingRoutes');
+const statsRoutes = require('./routes/stats');
 
 // تمكين استقبال JSON
 app.use(express.json());
@@ -28,6 +29,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/auth', auth);
 app.use('/api/resources', resourcesRouter);
 app.use('/api/bookings', BookingRoutes);
+app.use('/api', statsRoutes);
 
 // تشغيل السيرفر
 const PORT = process.env.PORT || 5000;

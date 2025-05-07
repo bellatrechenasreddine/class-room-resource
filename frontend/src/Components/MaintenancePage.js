@@ -101,7 +101,7 @@ const [maintenanceNotifications, setMaintenanceNotifications] = useState([
           ))}
         </tbody>
       </table>
-
+      
       <div className="logout-container">
         <button className="logout-button" onClick={handleLogout}>
           🚪 Logout

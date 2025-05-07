@@ -38,46 +38,57 @@ const HistoryBooking = () => {
     return date.toLocaleDateString('en-US', options);
   };
 
-  const handleDelete = (id) => {
-    axios.delete(`http://localhost:5000/api/bookings/${id}`)
-      .then(() => {
-        setBookingHistory(bookingHistory.filter(booking => booking.id !== id));
-        alert('Booking has been deleted successfully!');
-      })
-      .catch((error) => {
-        console.error("Error deleting booking:", error);
-        alert('Error deleting booking!');
-      });
-  };
-
   const handleEdit = (booking) => {
     setShowEditBooking(true);
     setCurrentBooking(booking);
   };
-
-  const handleUpdateBooking = () => {
-    const formattedDate = new Date(currentBooking.booking_date).toISOString().split('T')[0];
-
-    axios.put(`http://localhost:5000/api/bookings/${currentBooking.id}`, {
-      start_time: currentBooking.start_time,
-      end_time: currentBooking.end_time,
-      booking_date: formattedDate,
-      resource_id: currentBooking.resource_id,
+  
+const handleDelete = (id) => {
+  const token = localStorage.getItem('token');
+  axios.delete(`http://localhost:5000/api/bookings/${id}`, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  })
+    .then(() => {
+      setBookingHistory(bookingHistory.filter(booking => booking.id !== id));
+      alert('Booking has been deleted successfully!');
     })
-      .then((res) => {
-        setBookingHistory(bookingHistory.map(b => b.id === currentBooking.id ? res.data : b));
-        alert('Booking has been updated successfully!');
-        setShowEditBooking(false);
-      })
-      .catch((error) => {
-        console.error("Error updating booking:", error);
-        if (error.response && error.response.data.message) {
-          alert(error.response.data.message);
-        } else {
-          alert('Error updating booking!');
-        }
-      });
-  };
+    .catch((error) => {
+      console.error("Error deleting booking:", error);
+      alert('Error deleting booking!');
+    });
+};
+
+const handleUpdateBooking = () => {
+  const token = localStorage.getItem('token');
+  const formattedDate = new Date(currentBooking.booking_date).toISOString().split('T')[0];
+
+  axios.put(`http://localhost:5000/api/bookings/${currentBooking.id}`, {
+    start_time: currentBooking.start_time,
+    end_time: currentBooking.end_time,
+    booking_date: formattedDate,
+    resource_id: currentBooking.resource_id,
+  }, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  })
+    .then((res) => {
+      setBookingHistory(bookingHistory.map(b => b.id === currentBooking.id ? res.data : b));
+      alert('Booking has been updated successfully!');
+      setShowEditBooking(false);
+    })
+    .catch((error) => {
+      console.error("Error updating booking:", error);
+      if (error.response && error.response.data.message) {
+        alert(error.response.data.message);
+      } else {
+        alert('Error updating booking!');
+      }
+    });
+};
+
 
   return (
     <div className="booking-content">

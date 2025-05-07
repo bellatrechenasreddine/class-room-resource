@@ -1,24 +1,3 @@
-// import React from "react";
-// import "./NotificationBox.css"; // تأكد من وجود ملف CSS
-
-// const NotificationBox = ({ notifications }) => {
-//   return (
-
-//     <div className="notification-dropdown">
-//       <h3>📢 الإشعارات</h3>
-//       <ul>
-//         {notifications.length > 0 ? (
-//           notifications.map((notif, index) => (
-//             <li key={index}>{notif}</li>
-//           ))
-//         ) : (
-//           <li>لا توجد إشعارات جديدة</li>
-//         )}
-//       </ul>
-//     </div>
-//   );
-// };
-
 // export default NotificationBox;
 
 import React from "react";
