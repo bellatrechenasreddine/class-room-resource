@@ -1,27 +1,21 @@
-import React, { useState, useEffect} from 'react';
-import { useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import "./BookingForm.css";
 
 const BookingForm = () => {
   const [showModal, setShowModal] = useState(false);
+  const [selectedType, setSelectedType] = useState(null);
   const [selectedResource, setSelectedResource] = useState(null);
   const [resources, setResources] = useState([]);
   const [loading, setLoading] = useState(true);
   const carouselRef = useRef(null);
-  const scrollRef = useRef();
-  
+
   const scrollLeft = () => {
     carouselRef.current.scrollBy({ left: -200, behavior: 'smooth' });
   };
 
   const scrollRight = () => {
     carouselRef.current.scrollBy({ left: 200, behavior: 'smooth' });
-  };
-  const scrollResources = (direction) => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollBy({ left: direction, behavior: 'smooth' });
-    }
   };
 
   useEffect(() => {
@@ -40,7 +34,6 @@ const BookingForm = () => {
       });
   }, []);
 
-  // Group resources by type
   const groupedResources = resources.reduce((acc, resource) => {
     if (!acc[resource.type]) {
       acc[resource.type] = [];
@@ -49,43 +42,47 @@ const BookingForm = () => {
     return acc;
   }, {});
 
-  const handleResourceClick = (resourceType) => {
-    setSelectedResource(resourceType);
+  const handleResourceTypeClick = (resourceType) => {
+    setSelectedType(resourceType);
+    const defaultResource = groupedResources[resourceType]?.[0];
+    setSelectedResource(defaultResource || null);
   };
 
-  const handleSpecificResourceClick = (resource) => {
+  const handleResourceChange = (e) => {
+    const resourceId = parseInt(e.target.value);
+    const resource = groupedResources[selectedType].find(r => r.id === resourceId);
     setSelectedResource(resource);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     const formData = new FormData(e.target);
     const bookingDate = formData.get('bookingDate');
     const startTime = formData.get('startTime');
     const endTime = formData.get('endTime');
-  
+
     const startDate = new Date(bookingDate + 'T' + startTime + ':00');
     const endDate = new Date(bookingDate + 'T' + endTime + ':00');
-  
+
     if (endDate <= startDate) {
       alert("⚠️ The end time must be after the start time.");
       return;
     }
-  
+
     const token = localStorage.getItem("token");
     if (!token) {
       alert("Please log in first.");
       return;
     }
-  
+
     const bookingData = {
       resource_id: selectedResource.id,
       booking_date: bookingDate,
       start_time: startDate.toTimeString().split(' ')[0],
       end_time: endDate.toTimeString().split(' ')[0],
     };
-  
+
     try {
       const response = await axios.post(
         'http://localhost:5000/api/bookings',
@@ -96,84 +93,58 @@ const BookingForm = () => {
           }
         }
       );
-  
+
       console.log('Booking created:', response.data);
-      setShowModal(true); // Show modal on success
-  
-      setTimeout(() => {
-        setShowModal(false);
-      }, 3000);
+      setShowModal(true);
+      setTimeout(() => setShowModal(false), 3000);
     } catch (error) {
       console.error('Error creating booking:', error);
-  
-      // عرض رسالة خطأ مناسبة للمستخدم
       if (error.response && error.response.status === 409) {
         const { message } = error.response.data;
         alert(`⚠️ ${message}`);
       } else {
         alert('Failed to create booking. Please try again.');
       }
-      
     }
   };
-  
 
   return (
     <div className="booking-container">
-      {/* ✅ Display resource types */}
-      {!selectedResource && (
+      {/* ✅ Resource type selection */}
+      {!selectedType && (
         <div className="carousel-wrapper">
-        <button className="scroll-btn" onClick={scrollLeft}>⬅️</button>
-        <div className="carousel" ref={carouselRef}>
-          {Object.keys(groupedResources).map((resourceType) => (
-            <div key={resourceType} className="resource-card" onClick={() => handleResourceClick(resourceType)}>
-              <img
-                src={`/images/${resourceType.toLowerCase().replace(/\s+/g, "")}.png`}
-                alt={resourceType}
-                style={{ width: '100px', height: '100px', cursor: 'pointer' }}
-              />
-              <p>{resourceType}</p>
-            </div>
-          ))}
-        </div>
+          <button className="scroll-btn" onClick={scrollLeft}>⬅️</button>
+          <div className="carousel" ref={carouselRef}>
+            {Object.keys(groupedResources).map((resourceType) => (
+              <div key={resourceType} className="resource-card" onClick={() => handleResourceTypeClick(resourceType)}>
+                <img
+                  src={`/images/${resourceType.toLowerCase().replace(/\s+/g, "")}.png`}
+                  alt={resourceType}
+                  style={{ width: '100px', height: '100px', cursor: 'pointer' }}
+                />
+                <p>{resourceType}</p>
+              </div>
+            ))}
+          </div>
           <button className="scroll-btn" onClick={scrollRight}>➡️</button>
         </div>
       )}
 
-      {/* ✅ Show resources list after selecting resource type */}
-      {selectedResource && !selectedResource.id && (
-        <> 
-          <div className="resource-list-wrapper">
-            <button className="scroll-btn left" onClick={() => scrollResources(-200)}>⬅️</button>
-      
-            <div className="resource-list" ref={scrollRef}>
-              {groupedResources[selectedResource].map((resource) => (
-                <div key={resource.id} className="resource-card" onClick={() => handleSpecificResourceClick(resource)}>
-                  <img
-                    src={`/images/${resource.type.toLowerCase().replace(/\s+/g, "")}.png`}
-                    alt={resource.name}
-                    style={{ width: '100px', height: '100px', cursor: 'pointer' }}
-                  />
-                  <p>{resource.name}  {resource.location}</p>
-                </div>
-              ))}
-            </div>
-      
-            <button className="scroll-btn right" onClick={() => scrollResources(200)}>➡️</button>
-          </div>
-        </>
-      )}
-
-
-      {/* ✅ Form appears after selecting a specific resource */}
-      {selectedResource && selectedResource.id && (
+      {/* ✅ Booking form after selecting resource type */}
+      {selectedType && selectedResource && (
         <form className="booking-form" onSubmit={handleSubmit}>
           <h2>📌 Booking Form</h2>
-          <p className="form-description">Fill in the details below to book a resource.</p>
+          <p className="form-description">Select a resource and fill in the details below.</p>
 
           <div className="form-group">
-            <label>Selected Resource</label>
-            <input type="text" value={selectedResource.name} readOnly />
+            <label>Choose Resource</label>
+            <select name="resource" value={selectedResource.id} onChange={handleResourceChange} required>
+              {groupedResources[selectedType].map((resource) => (
+                <option key={resource.id} value={resource.id}>
+                  {resource.name} - {resource.location}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div style={{ textAlign: "center", marginBottom: "15px" }}>
@@ -200,6 +171,7 @@ const BookingForm = () => {
               type="button"
               className="reset-btn"
               onClick={() => {
+                setSelectedType(null);
                 setSelectedResource(null);
               }}
             >
