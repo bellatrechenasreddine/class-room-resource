@@ -35,7 +35,6 @@ router.get('/', verifyToken, async (req, res) => {
   }
 });
 
-
 // ✅ إضافة حجز جديد
 router.post('/', verifyToken, async (req, res) => {
   const { resource_id, start_time, end_time, booking_date } = req.body;
