@@ -101,23 +101,23 @@ const handleAddUser = async () => {
       setShowAddUser(false);
     } catch (error) {
       console.error("Error adding user", error);
-      alert("حدث خطأ أثناء إضافة المستخدم");
+      alert("An error occurred while adding the user");
     }
   }
 };
 
 // حذف مستخدم
 const handleDeleteUser = async (id) => {
-  const confirmDelete = window.confirm("هل أنت متأكد أنك تريد حذف هذا المستخدم؟");
+  const confirmDelete = window.confirm("Are you sure you want to delete this user?");
 
   if (confirmDelete) {
     try {
       await axios.delete(`http://localhost:5000/api/users/${id}`);
       setUsers(users.filter(user => user.id !== id)); // تحديث القائمة بعد الحذف
-      alert("تم حذف المستخدم بنجاح");
+      alert("User deleted successfully");
     } catch (error) {
       console.error("Error deleting user", error);
-      alert("حدث خطأ أثناء حذف المستخدم");
+      alert("An error occurred while deleting the user");
     }
   }
 };
@@ -138,10 +138,10 @@ const handleUpdateUser = async () => {
       // تحديث المستخدم في القائمة
       setUsers(users.map(user => user.id === updatedUser.id ? updatedUser : user));
       setShowEditUser(false);
-      alert("تم تعديل المستخدم بنجاح");
+      alert("User has been successfully modified");
     } catch (error) {
       console.error("Error updating user", error);
-      alert("حدث خطأ أثناء تعديل المستخدم");
+      alert("An error occurred while editing the user");
     }
   }
 };
@@ -219,10 +219,10 @@ const handleUpdateUser = async () => {
         setShowAddResource(false);
       } catch (error) {
         console.error("Error adding resource", error);
-        alert("حدث خطأ أثناء إضافة المورد");
+        alert("An error occurred while adding the resource");
       }
     } else {
-      alert("يرجى ملء جميع الحقول!");
+      alert("Please fill in all fields!");
     }
   };
   
@@ -243,24 +243,24 @@ const handleUpdateUser = async () => {
         // تحديث المورد في القائمة
         setResources(resources.map(resource => resource.id === updatedResource.id ? updatedResource : resource));
         setShowEditResource(false);
-        alert("تم تعديل المورد بنجاح");
+        alert("Resource has been successfully modified");
       } catch (error) {
         console.error("Error updating resource", error);
-        alert("حدث خطأ أثناء تعديل المورد");
+        alert("An error occurred while editing the resource");
       }
     }
   };
   const handleDeleteResource = async (id) => {
-    const confirmDelete = window.confirm("هل أنت متأكد أنك تريد حذف هذا المورد؟");
+    const confirmDelete = window.confirm("Are you sure you want to delete this resource?");
   
     if (confirmDelete) {
       try {
         await axios.delete(`http://localhost:5000/api/resources/${id}`);
         setResources(resources.filter(resource => resource.id !== id)); // تحديث القائمة بعد الحذف
-        alert("تم حذف المورد بنجاح");
+        alert("The resource was successfully deleted");
       } catch (error) {
         console.error("Error deleting resource", error);
-        alert("حدث خطأ أثناء حذف المورد");
+        alert("An error occurred while deleting the resource");
       }
     }
   };
@@ -309,19 +309,19 @@ const handleAddBooking = async () => {
     setNewBooking({ id: '', resource_id: '', user_id: '', start_time: '', end_time: '' });  // إعادة تعيين النموذج
   } catch (err) {
     console.error('❌ Error adding booking:', err);
-    alert('حدث خطأ أثناء إضافة الحجز');
+    alert('An error occurred while adding the booking');
   }
 };
 
 // 4. حذف حجز
 const handleDeleteBooking = async (id) => {
-  if (!window.confirm('هل تريد إلغاء هذا الحجز؟')) return;
+  if (!window.confirm('Do you want to cancel this booking?')) return;
   try {
     await axios.delete(`http://localhost:5000/api/bookings/${id}`);
     setBookings(bookings.filter(r => r.id !== id));  // إزالة الحجز المحذوف من القائمة
   } catch (err) {
     console.error('❌ Error deleting booking:', err);
-    alert('حدث خطأ أثناء إلغاء الحجز');
+    alert('An error occurred while cancelling the booking');
   }
 };
 

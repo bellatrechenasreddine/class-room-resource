@@ -26,8 +26,8 @@ const StudentDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [notifications, setNotifications] = useState([
-    "🔔 لديك حجز قادم يوم غد!",
-    "🔔 لا تنسَ إرجاع المعدات في الوقت المحدد."
+    "🔔 You have a booking coming up tomorrow!",
+    "🔔 Don't forget to return the equipment on time"
   ]);
   const [isOpen, setIsOpen] = useState(false); // ✅ حالة التحكم في فتح/إغلاق الإشعارات
   const [stats, setStats] = useState([]); // ⚙️ لتخزين الإحصائيات

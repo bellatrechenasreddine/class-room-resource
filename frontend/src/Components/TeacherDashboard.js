@@ -82,8 +82,8 @@ const TeacherDashboard = () => {
   };
 
   const [notifications, setNotifications] = useState([
-    "📅 لديك حجز لموارد تعليمية غدًا!",
-    "⚠️ الرجاء التأكد من توفر الموارد المحجوزة."
+    "📅 You have a booking for learning resources tomorrow!",
+    "⚠️ Please ensure that the reserved resources are available"
   ]);
   const [isOpen, setIsOpen] = useState(false);
   const [maintenanceNotifications, setMaintenanceNotifications] = useState([]);
