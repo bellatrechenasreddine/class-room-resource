@@ -7,8 +7,12 @@ const BookingForm = () => {
   const [selectedType, setSelectedType] = useState(null);
   const [selectedResource, setSelectedResource] = useState(null);
   const [resources, setResources] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [availableResources, setAvailableResources] = useState([]);
+  const [bookingDate, setBookingDate] = useState('');
+  const [startTime, setStartTime] = useState('');
+  const [endTime, setEndTime] = useState('');
   const carouselRef = useRef(null);
+  const [loading, setLoading] = useState(true);
 
   const scrollLeft = () => {
     carouselRef.current.scrollBy({ left: -200, behavior: 'smooth' });
@@ -44,23 +48,61 @@ const BookingForm = () => {
 
   const handleResourceTypeClick = (resourceType) => {
     setSelectedType(resourceType);
-    const defaultResource = groupedResources[resourceType]?.[0];
-    setSelectedResource(defaultResource || null);
+    setBookingDate('');
+    setStartTime('');
+    setEndTime('');
+    setSelectedResource(null);
+    setAvailableResources([]);
+  };
+
+  const handleDateChange = (e) => {
+    const date = e.target.value;
+    setBookingDate(date);
+    filterAvailableResources(date, startTime, endTime);
+  };
+
+  const handleStartTimeChange = (e) => {
+    const time = e.target.value;
+    setStartTime(time);
+    filterAvailableResources(bookingDate, time, endTime);
+  };
+
+  const handleEndTimeChange = (e) => {
+    const time = e.target.value;
+    setEndTime(time);
+    filterAvailableResources(bookingDate, startTime, time);
+  };
+
+  const filterAvailableResources = async (date, start, end) => {
+    if (!date || !start || !end || !selectedType) return;
+
+    try {
+      const response = await axios.get('http://localhost:5000/api/resources/available', {
+        params: {
+          date,
+          start,
+          end,
+          type: selectedType
+        }
+      });
+
+      setAvailableResources(response.data);
+      setSelectedResource(response.data[0] || null);
+    } catch (err) {
+      console.error("Error fetching available resources", err);
+      setAvailableResources([]);
+      setSelectedResource(null);
+    }
   };
 
   const handleResourceChange = (e) => {
     const resourceId = parseInt(e.target.value);
-    const resource = groupedResources[selectedType].find(r => r.id === resourceId);
+    const resource = availableResources.find(r => r.id === resourceId);
     setSelectedResource(resource);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    const formData = new FormData(e.target);
-    const bookingDate = formData.get('bookingDate');
-    const startTime = formData.get('startTime');
-    const endTime = formData.get('endTime');
 
     const startDate = new Date(bookingDate + 'T' + startTime + ':00');
     const endDate = new Date(bookingDate + 'T' + endTime + ':00');
@@ -110,7 +152,8 @@ const BookingForm = () => {
 
   return (
     <div className="booking-container">
-      {/* ✅ Resource type selection */}
+
+      {/* ✅ Step 1: Select resource type */}
       {!selectedType && (
         <div className="carousel-wrapper">
           <button className="scroll-btn" onClick={scrollLeft}>⬅️</button>
@@ -130,41 +173,56 @@ const BookingForm = () => {
         </div>
       )}
 
-      {/* ✅ Booking form after selecting resource type */}
-      {selectedType && selectedResource && (
+      {/* ✅ Step 2: Booking Form */}
+      {selectedType && (
         <form className="booking-form" onSubmit={handleSubmit}>
           <h2>📌 Booking Form</h2>
-          <p className="form-description">Select a resource and fill in the details below.</p>
+          <p className="form-description">Select a time and see available resources.</p>
 
-          <div className="form-group">
-            <label>Choose Resource</label>
-            <select name="resource" value={selectedResource.id} onChange={handleResourceChange} required>
-              {groupedResources[selectedType].map((resource) => (
-                <option key={resource.id} value={resource.id}>
-                  {resource.name} - {resource.location}
-                </option>
-              ))}
-            </select>
-          </div>
-
+          {/* التاريخ */}
           <div style={{ textAlign: "center", marginBottom: "15px" }}>
             <label style={{ display: "block", fontWeight: "bold", marginBottom: "5px" }}>
               Booking Date
             </label>
-            <input type="date" name="bookingDate" required style={{ padding: "8px", borderRadius: "6px", border: "1px solid #ccc" }} />
+            <input
+              type="date"
+              name="bookingDate"
+              value={bookingDate}
+              onChange={handleDateChange}
+              required
+              style={{ padding: "8px", borderRadius: "6px", border: "1px solid #ccc" }}
+            />
           </div>
 
-          <div style={{ display: "flex", gap: "20px", justifyContent: "center" }}>
+          {/* الوقت */}
+          <div style={{ display: "flex", gap: "20px", justifyContent: "center", marginBottom: "15px" }}>
             <div>
               <label>Start Time</label>
-              <input type="time" name="startTime" required />
+              <input type="time" name="startTime" value={startTime} onChange={handleStartTimeChange} required />
             </div>
             <div>
               <label>End Time</label>
-              <input type="time" name="endTime" required />
+              <input type="time" name="endTime" value={endTime} onChange={handleEndTimeChange} required />
             </div>
           </div>
 
+          {/* الموارد المتاحة */}
+          <div className="form-group">
+            <label>Available Resources</label>
+            <select name="resource" value={selectedResource?.id || ''} onChange={handleResourceChange} required>
+              {availableResources.length > 0 ? (
+                availableResources.map((resource) => (
+                  <option key={resource.id} value={resource.id}>
+                    {resource.name} - {resource.location}
+                  </option>
+                ))
+              ) : (
+                <option disabled>No available resources</option>
+              )}
+            </select>
+          </div>
+
+          {/* الأزرار */}
           <div className="form-buttons">
             <button type="submit" className="submit-btn">📩 Submit</button>
             <button
@@ -181,7 +239,7 @@ const BookingForm = () => {
         </form>
       )}
 
-      {/* ✅ Confirmation Modal */}
+      {/* ✅ Modal */}
       {showModal && (
         <div className="modal-overlay">
           <div className="modal">

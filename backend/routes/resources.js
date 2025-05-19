@@ -2,8 +2,6 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../db');  // الاتصال بقاعدة البيانات
 
-// جلب جميع الموارد
-// جلب جميع الموارد مجمعة حسب النوع
 // جلب جميع الموارد (بدون تجميع)
 router.get('/', async (req, res) => {
   try {
@@ -38,6 +36,57 @@ router.get('/', async (req, res) => {
   }
 });
 
+// جلب الموارد المتاحة حسب النوع، التاريخ، ووقت البداية والنهاية
+router.get('/available', async (req, res) => {
+  const { date, start, end, type } = req.query;
+
+  if (!date || !start || !end || !type) {
+    return res.status(400).json({ message: 'Missing required query parameters.' });
+  }
+
+  try {
+    const query = `
+      SELECT *
+      FROM resources
+      WHERE type = $1
+        AND id NOT IN (
+          SELECT resource_id
+          FROM bookings
+          WHERE booking_date = $2
+            AND (
+              (start_time < $4 AND end_time > $3)
+            )
+        )
+      ORDER BY
+        CASE type
+          WHEN 'Meeting Room' THEN 1
+          WHEN 'Classroom' THEN 2
+          WHEN 'Lab' THEN 3
+          WHEN 'Projector' THEN 4
+          WHEN 'Computer' THEN 5
+          WHEN 'Camera' THEN 6
+          WHEN 'Microphone' THEN 7
+          WHEN 'Speaker' THEN 8
+          ELSE 9
+        END,
+        CAST(regexp_replace(name, '\\D', '', 'g') AS INTEGER),
+        CASE location
+          WHEN 'College A' THEN 1
+          WHEN 'College B' THEN 2
+          WHEN 'College C' THEN 3
+          ELSE 4
+        END
+    `;
+
+    const values = [type.trim(), date, start, end];
+
+    const result = await pool.query(query, values);
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching available resources:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
 
 // إضافة مورد جديد
 router.post('/', async (req, res) => {
@@ -58,6 +107,7 @@ router.post('/', async (req, res) => {
     res.status(500).json({ message: 'Internal server error' });
   }
 });
+
 // تعديل مورد
 router.put('/:id', async (req, res) => {
   const { id } = req.params;  // استخراج الـ ID من الـ URL
@@ -86,6 +136,7 @@ router.put('/:id', async (req, res) => {
     res.status(500).json({ message: 'Internal server error' });
   }
 });
+
 // مسار حذف المورد
 router.delete('/:id', async (req, res) => {
   const { id } = req.params;
@@ -100,7 +151,5 @@ router.delete('/:id', async (req, res) => {
     res.status(500).json({ message: 'Internal server error' });
   }
 });
-
-
 
 module.exports = router;

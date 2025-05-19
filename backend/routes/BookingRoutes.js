@@ -237,6 +237,40 @@ router.put('/:id', verifyToken, async (req, res) => {
     res.status(500).json({ message: 'Internal server error' });
   }
 });
+// ✅ عرض تاريخ الحجز لكل المستخدمين أو حسب المستخدم حسب الدور
+router.get('/history', verifyToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const role = req.user.role;
+
+    let query = `
+      SELECT bookings.id, 
+            bookings.resource_id, 
+            bookings.start_time, 
+            bookings.end_time, 
+            bookings.booking_date, 
+            resources.name AS resource_name,  
+            resources.location AS resource_location  
+      FROM bookings 
+      JOIN resources ON bookings.resource_id = resources.id
+    `;
+    let params = [];
+
+    if (role !== 'admin') {
+      // فقط حجوزات هذا المستخدم
+      query += ` WHERE bookings.user_id = $1`;
+      params = [userId];
+    }
+
+    query += ' ORDER BY booking_date DESC';
+
+    const result = await pool.query(query, params);
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Error fetching booking history:', err);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
 
 
 
