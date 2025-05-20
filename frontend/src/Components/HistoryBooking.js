@@ -114,8 +114,17 @@ const handleUpdateBooking = () => {
                   {(() => {
                     const start = new Date(`1970-01-01T${booking.start_time}`);
                     const end = new Date(`1970-01-01T${booking.end_time}`);
-                    const diff = (end - start) / (1000 * 60);
-                    return `${diff} min`;
+                    const diffInMinutes = (end - start) / (1000 * 60);
+                    const hours = Math.floor(diffInMinutes / 60);
+                    const minutes = diffInMinutes % 60;
+                
+                    if (hours === 0) {
+                      return `${minutes} min`;
+                    } else if (minutes === 0) {
+                      return `${hours} h`;
+                    } else {
+                      return `${hours} h : ${minutes} min`;
+                    }
                   })()}
                 </td>
                 <td>
