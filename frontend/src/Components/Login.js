@@ -29,11 +29,13 @@ export default function Login() {
 
       const userRole = payload.role;
       const userName = payload.name;
+      const userId = payload.id; 
       console.log("Decoded name:", userName);
 
       // حفظ التوكن والاسم في localStorage
       localStorage.setItem("token", token);
       localStorage.setItem("userName", userName);
+      localStorage.setItem("userId", userId.toString());
       // تحقق من تخزين البيانات في localStorage
     console.log("Stored name in localStorage:", localStorage.getItem("userName"));
     console.log("Decoded token:", JSON.parse(atob(localStorage.getItem("token").split('.')[1])));

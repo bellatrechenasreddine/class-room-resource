@@ -1,196 +1,116 @@
-// import React, { useState } from "react";
-// import "./ReportForm.css";
-
-// const ReportForm = () => {
-//  const [issueDescription, setIssueDescription] = useState("");
-//   const handleReportSubmit = (e) => {
-//     e.preventDefault();
-//     alert(`Report submitted: ${issueDescription}`);
-//     setIssueDescription("");
-//   };
-
-//   return (
-//     <div className="booking-content">
-      
-
-//       {/* 📢 نموذج الإبلاغ عن مشكلة */}
-//       <div className="report-form">
-//         <h3>📝 Report a Problem</h3>
-//         <form onSubmit={handleReportSubmit}>
-//           <label>Issue Description:</label>
-//           <textarea
-//             rows="3"
-//             placeholder="Describe the issue..."
-//             value={issueDescription}
-//             onChange={(e) => setIssueDescription(e.target.value)}
-//             required
-//           />
-//           <button type="submit" className="submit-report-btn">📤 Submit Report</button>
-//         </form>
-//       </div>
-//     </div>
-//   );
-// }
-
-// export default ReportForm;
-
-
-
-
-
-
-
-
-
-
-// import React, { useState } from "react";
-// import resourceOptions from "./resourceOptions"; // استيراد الموارد
-// import "./ReportForm.css";
-
-// const ReportForm = () => {
-//   const [selectedCategory, setSelectedCategory] = useState("");
-//   const [selectedResource, setSelectedResource] = useState("");
-//   const [issueDescription, setIssueDescription] = useState("");
-
-//   const handleReportSubmit = (e) => {
-//     e.preventDefault();
-//     alert(`Report submitted for ${selectedResource} in ${selectedCategory}: ${issueDescription}`);
-//     setSelectedCategory("");
-//     setSelectedResource("");
-//     setIssueDescription("");
-//   };
-
-//   return (
-//     <div className="booking-content">
-//       <div className="report-form">
-//         <h3>📝 Report a Problem</h3>
-//         <form onSubmit={handleReportSubmit}>
-//           {/* اختيار الفئة */}
-//           <label>Resource Category:</label>
-//           <select
-//             value={selectedCategory}
-//             onChange={(e) => {
-//               setSelectedCategory(e.target.value);
-//               setSelectedResource(""); // تصفير المورد عند تغيير الفئة
-//             }}
-//             required
-//           >
-//             <option value="">Select a category</option>
-//             {Object.keys(resourceOptions).map((cat, i) => (
-//               <option key={i} value={cat}>{cat}</option>
-//             ))}
-//           </select>
-
-//           {/* اختيار المورد */}
-//           {selectedCategory && (
-//             <>
-//               <label>Resource Name:</label>
-//               <select
-//                 value={selectedResource}
-//                 onChange={(e) => setSelectedResource(e.target.value)}
-//                 required
-//               >
-//                 <option value="">Select a resource</option>
-//                 {resourceOptions[selectedCategory].map((res, i) => (
-//                   <option key={i} value={res}>{res}</option>
-//                 ))}
-//               </select>
-//             </>
-//           )}
-
-//           <label>Issue Description:</label>
-//           <textarea
-//             rows="3"
-//             placeholder="Describe the issue..."
-//             value={issueDescription}
-//             onChange={(e) => setIssueDescription(e.target.value)}
-//             required
-//           />
-
-//           <button type="submit" className="submit-report-btn">📤 Submit Report</button>
-//         </form>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default ReportForm;
-
-
-import React, { useState } from "react";
-import resourceOptions from "./resourceOptions"; // استيراد الموارد
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 import "./ReportForm.css";
 
-const ReportForm = ({ setMaintenanceNotifications }) => {
-  const [selectedCategory, setSelectedCategory] = useState("");
+const ReportForm = () => {
+  const [bookedResources, setBookedResources] = useState([]);
   const [selectedResource, setSelectedResource] = useState("");
+  const [issueType, setIssueType] = useState("");
+  const [customIssue, setCustomIssue] = useState("");
   const [issueDescription, setIssueDescription] = useState("");
 
-  const handleReportSubmit = (e) => {
-    e.preventDefault();
+  const userId = localStorage.getItem("userId"); // Make sure userId is stored after login
 
-    if (!selectedCategory || !selectedResource || !issueDescription.trim()) {
-      alert("Please complete all fields.");
-      return;
-    }
+  useEffect(() => {
+    axios
+      .get("/api/bookings", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      })
+      .then((res) => {
+        setBookedResources(
+          res.data.map((b) => ({
+            id: b.resource_id,
+            name: b.resource_name,
+            location: b.resource_location  // ← تأكد أن هذا الحقل موجود فعلاً في الـ API
+          }))
+        );
+      })
+      .catch((err) => {
+        console.error("Error fetching booked resources", err);
+      });
+  }, []);
 
-    // ✅ إرسال إشعار للصيانة
-    const notification = `📢 Issue with ${selectedResource} (${selectedCategory}): ${issueDescription.slice(0, 40)}...`;
-    if (setMaintenanceNotifications) {
-      setMaintenanceNotifications(prev => [...prev, notification]);
-    }
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+  const finalIssueType = issueType === "other" ? customIssue : issueType;
 
-    alert("✅ Report submitted successfully!");
-
-    // تصفير الحقول
-    setSelectedCategory("");
-    setSelectedResource("");
-    setIssueDescription("");
+  // تحقق من القيم قبل الإرسال
+  const reportData = {
+    resource_id: selectedResource,
+    reported_by: userId,
+    issue_title: finalIssueType,
+    issue_description: issueDescription || "No extra details", // حتى لا تكون فارغة
   };
+
+  console.log("🟡 Sending Report:", reportData); // ← طباعة البيانات قبل الإرسال
+
+  try {
+    await axios.post("/api/maintenance/", reportData);
+
+    alert("🟢 Report submitted successfully!");
+    setSelectedResource("");
+    setIssueType("");
+    setCustomIssue("");
+    setIssueDescription("");
+  } catch (error) {
+    console.error("🔴 Failed to submit report", error);
+    alert("🔴 Failed to submit report.");
+  }
+};
+
 
   return (
     <div className="booking-content">
       <div className="report-form">
         <h3>📝 Report a Problem</h3>
-        <form onSubmit={handleReportSubmit}>
-          <label>Resource Category:</label>
+        <form onSubmit={handleSubmit}>
+          <label>🔧 Resource you want to report:</label>
           <select
-            value={selectedCategory}
-            onChange={(e) => {
-              setSelectedCategory(e.target.value);
-              setSelectedResource("");
-            }}
+            value={selectedResource}
+            onChange={(e) => setSelectedResource(e.target.value)}
             required
           >
-            <option value="">Select a category</option>
-            {Object.keys(resourceOptions).map((cat, i) => (
-              <option key={i} value={cat}>{cat}</option>
+            <option value="">-- Select a booked resource --</option>
+            {bookedResources.map((res, index) => (
+              <option key={`${res.id}-${index}`} value={res.id}>
+                {res.name} ({res.location})
+              </option>
             ))}
           </select>
 
-          {selectedCategory && (
+          <label>⚠️ Type of Issue:</label>
+          <select
+            value={issueType}
+            onChange={(e) => setIssueType(e.target.value)}
+            required
+          >
+            <option value="">-- Select issue type --</option>
+            <option value="Broken screen">Broken screen</option>
+            <option value="Does not turn on">Does not turn on</option>
+            <option value="Network issue">Network issue</option>
+            <option value="other">Other</option>
+          </select>
+
+          {issueType === "other" && (
             <>
-              <label>Resource Name:</label>
-              <select
-                value={selectedResource}
-                onChange={(e) => setSelectedResource(e.target.value)}
-                required
-              >
-                <option value="">Select a resource</option>
-                {resourceOptions[selectedCategory].map((res, i) => (
-                  <option key={i} value={res}>{res}</option>
-                ))}
-              </select>
+              <label>Specify the issue type:</label>
+              <input
+                type="text"
+                value={customIssue}
+                onChange={(e) => setCustomIssue(e.target.value)}
+                placeholder="Describe the type of issue"
+              />
             </>
           )}
 
-          <label>Issue Description:</label>
+          <label>Description (optional):</label>
           <textarea
             rows="3"
-            placeholder="Describe the issue..."
+            placeholder="Provide additional details (optional)..."
             value={issueDescription}
             onChange={(e) => setIssueDescription(e.target.value)}
-            required
           />
 
           <button type="submit" className="submit-report-btn">

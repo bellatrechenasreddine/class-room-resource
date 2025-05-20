@@ -1,86 +1,91 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import "./MaintenancePage.css";
-import NotificationBox from "../Components/NotificationBox"; // ✅ استيراد صندوق الإشعارات
-import { FaBell } from "react-icons/fa"; // ✅ أيقونة الجرس
 
 const MaintenancePage = () => {
+  const [requests, setRequests] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedIssueDescription, setSelectedIssueDescription] = useState("");
+
   const navigate = useNavigate();
 
-  const [requests, setRequests] = useState([
-    {
-      id: 1,
-      resource_id: 101,
-      reported_by: 2001,
-      issue_description: "Projector not working",
-      date_reported: "2025-04-10",
-      date_resolved: "",
-    },
-    {
-      id: 2,
-      resource_id: 102,
-      reported_by: 2002,
-      issue_description: "Printer paper jam",
-      date_reported: "2025-04-09",
-      date_resolved: "2025-04-10",
-    },
-  ]);
-
-  const toggleResolved = (id) => {
-    setRequests((prev) =>
-      prev.map((req) =>
-        req.id === id
-          ? {
-              ...req,
-              date_resolved: req.date_resolved
-                ? ""
-                : new Date().toISOString().split("T")[0],
-            }
-          : req
-      )
-    );
+  // جلب بيانات الصيانة من API
+  const fetchMaintenanceRequests = async () => {
+    try {
+      const res = await axios.get("http://localhost:5000/api/maintenance");
+      setRequests(res.data);
+      setLoading(false);
+    } catch (err) {
+      setError("Failed to load maintenance requests.");
+      setLoading(false);
+    }
   };
 
-  const deleteRequest = (id) => {
-    setRequests((prev) => prev.filter((req) => req.id !== id));
+  useEffect(() => {
+    fetchMaintenanceRequests();
+  }, []);
+
+  // تغيير حالة الحل (تبديل بين محلول وغير محلول)
+  const toggleResolved = async (id) => {
+    try {
+      const res = await axios.put(`http://localhost:5000/api/maintenance/resolve/${id}`);
+      setRequests((prev) =>
+        prev.map((req) => (req.id === id ? res.data : req))
+      );
+    } catch (err) {
+      alert("Error updating resolve status.");
+    }
   };
 
+  // حذف بلاغ الصيانة
+  const deleteRequest = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this report?")) return;
+    try {
+      await axios.delete(`http://localhost:5000/api/maintenance/${id}`);
+      setRequests((prev) => prev.filter((req) => req.id !== id));
+    } catch (err) {
+      alert("Error deleting report.");
+    }
+  };
+
+  // فتح نافذة التفاصيل
+  const openModal = (description) => {
+    setSelectedIssueDescription(description);
+    setModalOpen(true);
+  };
+
+  // إغلاق النافذة
+  const closeModal = () => {
+    setModalOpen(false);
+    setSelectedIssueDescription("");
+  };
+
+  // تسجيل الخروج
   const handleLogout = () => {
+    localStorage.removeItem("token"); // عدل حسب ما تستخدم
+    localStorage.removeItem("username");
     navigate("/login");
   };
 
+  if (loading) return <p>Loading maintenance requests...</p>;
+  if (error) return <p>{error}</p>;
 
-const [maintenanceNotifications, setMaintenanceNotifications] = useState([
-  "⚙️Alert: Faulty device in lab 3",
-  "🚨 A device in the library needs urgent repair"
-]);
-
-
-  const [isMaintenanceOpen, setIsMaintenanceOpen] = useState(false); // التحكم في إشعارات الصيانة
-
-
-  
   return (
     <div className="maintenance-page">
-      {/* ✅ أيقونة الجرس للإشعارات */}
-             {/* ✅ أيقونة الجرس لفتح صندوق الإشعارات */}
-       <div className="notification-icon" onClick={() => setIsMaintenanceOpen(!isMaintenanceOpen)}>
-        <FaBell size={24} />
-        {maintenanceNotifications.length > 0 && <span className="badge">{maintenanceNotifications.length}</span>}
-      </div>
-
-      {/* ✅ صندوق الإشعارات المنسدل */}
-      {isMaintenanceOpen && <NotificationBox notifications={maintenanceNotifications} showMaintenance={false} />}
       <h2>🛠 Maintenance Requests</h2>
       <table className="maintenance-table">
         <thead>
           <tr>
             <th>ID</th>
-            <th>Resource ID</th>
+            <th>Resource</th>
             <th>Reported By</th>
-            <th>Issue Description</th>
+            <th>Issue Title</th>
             <th>Date Reported</th>
-            <th>Date Resolved</th>
+            <th>Status</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -88,29 +93,50 @@ const [maintenanceNotifications, setMaintenanceNotifications] = useState([
           {requests.map((req) => (
             <tr key={req.id}>
               <td>{req.id}</td>
-              <td>{req.resource_id}</td>
-              <td>{req.reported_by}</td>
-              <td>{req.issue_description}</td>
-              <td>{req.date_reported}</td>
-              <td>{req.date_resolved || "—"}</td>
+              <td>{req.resource_name || req.resource_id}</td>
+              <td>{req.reporter_name || req.reported_by}</td>
+              <td>{req.issue_title}</td>
+              <td>{new Date(req.date_reported).toLocaleDateString()}</td>
+              <td>{req.date_resolved ? "Resolved" : "Unresolved"}</td>
               <td>
                 <button onClick={() => toggleResolved(req.id)}>🔄 Change</button>
                 <button onClick={() => deleteRequest(req.id)}>🗑️ Delete</button>
+                <button onClick={() => openModal(req.issue_description)}>🔍 More Details</button>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
-      
-      <div className="logout-container">
-        <button className="logout-button" onClick={handleLogout}>
-          🚪 Logout
+
+      {/* زر تسجيل الخروج تحت الجدول بالمنتصف */}
+      <div style={{ textAlign: "center", marginTop: "20px" }}>
+        <button
+          onClick={handleLogout}
+          style={{
+            padding: "10px 20px",
+            fontSize: "16px",
+            cursor: "pointer",
+            borderRadius: "5px",
+            backgroundColor: "#f44336",
+            color: "white",
+            border: "none",
+          }}
+        >
+          Logout
         </button>
       </div>
+
+      {modalOpen && (
+        <div className="modal-overlay" onClick={closeModal}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h3>Issue Description</h3>
+            <p>{selectedIssueDescription}</p>
+            <button onClick={closeModal}>Close</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
 export default MaintenancePage;
-
-
