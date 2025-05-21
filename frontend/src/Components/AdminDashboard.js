@@ -16,20 +16,19 @@ import axios from 'axios';
 import { Bar } from "react-chartjs-2";
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, ArcElement, Tooltip, Legend);
 import { useNavigate } from 'react-router-dom';
-
-
-
+import { FaBug} from "react-icons/fa";
+import ReportForm from "./ReportForm";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();  // ✅ الآن يمكنك استخدام navigate('/path')
  //dashboard
- const [userName, setUserName] = useState("");
- 
- useEffect(() => {
-   const storedName = localStorage.getItem("userName");
-   if (storedName) {
-     setUserName(storedName);
-   }
+const [userName, setUserName] = useState("");
+
+useEffect(() => {
+    const storedName = localStorage.getItem("userName");
+  if (storedName) {
+    setUserName(storedName);
+  }
    // تحقق من البيانات المخزنة في localStorage
   console.log("Stored name in localStorage:", localStorage.getItem("userName"));
   console.log("Decoded token:", JSON.parse(atob(localStorage.getItem("token").split('.')[1])));
@@ -324,7 +323,7 @@ const handleDeleteBooking = async (id) => {
     alert('An error occurred while cancelling the booking');
   }
 };
-
+//report
 
 // Notification 
 const [maintenanceNotifications, setMaintenanceNotifications] = useState([
@@ -422,6 +421,9 @@ const handleDelete = (index) => {
         </button>
         <button className={activeTab === "history" ? "active" : ""} onClick={() => handleTabClick("history")}>
           <FaHistory /> Bookings History
+        </button>
+        <button className={activeTab === "reportProblem" ? "active" : ""} onClick={() => setActiveTab("reportProblem")}>
+          <FaBug className="icon" /> Report a Problem
         </button>
 
         <button className={activeTab === "reports" ? "active" : ""} onClick={() => { 
@@ -785,7 +787,9 @@ const handleDelete = (index) => {
 
 {activeTab === "Booking" && <BookingForm />}
 {activeTab === "history" && <HistoryBooking />}
-
+{activeTab === "reportProblem" && (
+  <ReportForm />
+)}  
 {activeTab === "reports" && (
   <div className="reports-container active">
     <h2>Reports</h2>
