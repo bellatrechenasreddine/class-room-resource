@@ -744,7 +744,6 @@ const handleDelete = (index) => {
       <table border="1">
         <thead>
           <tr>
-            {/* <th>ID</th> */}
             <th>Type</th>
             <th>Name</th>
             <th>Location</th>
@@ -761,12 +760,9 @@ const handleDelete = (index) => {
             )
             .map((resource, index) => (
               <tr key={index}>
-                {/* <td>{index + 1}</td> */}
                 <td>{resource.type}</td>
                 <td>{resource.name}</td>
                 <td>{resource.location}</td>
-      
-                {/* ✅ خانة تفعيل / تعطيل */}
                 <td>
                   <input
                     type="checkbox"

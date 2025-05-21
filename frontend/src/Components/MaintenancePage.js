@@ -33,6 +33,7 @@ const MaintenancePage = () => {
   const toggleResolved = async (id) => {
     try {
       const res = await axios.put(`http://localhost:5000/api/maintenance/resolve/${id}`);
+      console.log("Response from API:", res.data);
       setRequests((prev) =>
         prev.map((req) => (req.id === id ? res.data : req))
       );
@@ -80,10 +81,10 @@ const MaintenancePage = () => {
       <table className="maintenance-table">
         <thead>
           <tr>
-            <th>ID</th>
             <th>Resource</th>
             <th>Reported By</th>
             <th>Issue Title</th>
+            <th>Details</th>
             <th>Date Reported</th>
             <th>Status</th>
             <th>Actions</th>
@@ -92,23 +93,33 @@ const MaintenancePage = () => {
         <tbody>
           {requests.map((req) => (
             <tr key={req.id}>
-              <td>{req.id}</td>
-              <td>{req.resource_name || req.resource_id}</td>
+              <td>
+                {req.resource_name}
+                {req.resource_location ? ` - ${req.resource_location}` : ""}
+              </td>
               <td>{req.reporter_name || req.reported_by}</td>
               <td>{req.issue_title}</td>
-              <td>{new Date(req.date_reported).toLocaleDateString()}</td>
+              <td>
+                <button onClick={() => openModal(req.issue_description)}>🔍 View</button>
+              </td>
+              <td>
+                {new Date(req.date_reported).toLocaleString(undefined, {
+                  year: "numeric",
+                  month: "2-digit",
+                  day: "2-digit",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </td>
               <td>{req.date_resolved ? "Resolved" : "Unresolved"}</td>
               <td>
                 <button onClick={() => toggleResolved(req.id)}>🔄 Change</button>
                 <button onClick={() => deleteRequest(req.id)}>🗑️ Delete</button>
-                <button onClick={() => openModal(req.issue_description)}>🔍 More Details</button>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
-
-      {/* زر تسجيل الخروج تحت الجدول بالمنتصف */}
       <div style={{ textAlign: "center", marginTop: "20px" }}>
         <button
           onClick={handleLogout}
